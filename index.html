@@ -10,11 +10,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Bodoni+Moda:opsz,wght@6..96,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* Tasarım: Claude Design şablonundan uyarlandı (yeni tasarim.html) */
-    :root { --accent: #A3311A; --ink: #161616; --muted: #4a4a4a; --matte: #e9e6e0; --line: #e4e2dd; --soft: #f3f2ef; }
+    :root { --accent: #4E5B3C; --ink: #161616; --muted: #4a4a4a; --matte: #e9e6e0; --line: #e4e2dd; --soft: #f3f2ef; }
     * { box-sizing: border-box; }
     body { margin: 0; background: #fff; color: var(--ink); font-family: 'Manrope', system-ui, sans-serif; }
     a { color: var(--ink); text-decoration: none; }
-    a:hover { color: #8f2a14; }
+    a:hover { color: #3B4630; }
     h1, h2, h3 { font-family: 'Archivo', sans-serif; }
     .wrap { max-width: 1120px; margin: 0 auto; }
     .wide { max-width: 1240px; margin: 0 auto; }
@@ -103,8 +103,6 @@
     .buy .note { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.6; }
     .buy .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .status-sold { display: inline-block; align-self: flex-start; padding: 6px 12px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
-    .pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 8px; font-size: 14px; font-weight: 700; }
-    .pager a { min-height: 44px; display: inline-flex; align-items: center; }
     .related { margin-top: 96px; }
     .related h2 { font-size: 26px; margin: 0 0 24px; }
 
@@ -1764,15 +1762,12 @@
       );
     }
 
-    // ---- ProductPage: eserin kendi sayfası (görsel, künye, satın alma, diğer eserler) ----
+    // ---- ProductPage: eserin kendi sayfası (görsel, künye, satın alma, aynı konudan diğer eserler) ----
     function ProductPage({ id, cart }) {
       const product = byId(id);
       useEffect(() => { if (product) document.title = `${product.title} — ONT Art Gallery`; }, [product]);
       if (!product) return <NotFound />;
 
-      const i = PRODUCTS.indexOf(product);
-      const prev = PRODUCTS[(i - 1 + PRODUCTS.length) % PRODUCTS.length];
-      const next = PRODUCTS[(i + 1) % PRODUCTS.length];
       const related = PRODUCTS.filter(p => p.subject === product.subject && p.id !== product.id).slice(0, 4);
       const inCart = cart.has(product.id);
       const sold = product.original.status === "sold";
@@ -1807,10 +1802,6 @@
                     <p className="note">Türkiye içine sigortalı kargo ile, özel olarak paketlenerek gönderilir. Eser imzalıdır.</p>
                   </div>
                 )}
-                <div className="pager">
-                  <a href={`#/eser/${prev.id}`}>← {prev.title}</a>
-                  <a href={`#/eser/${next.id}`}>{next.title} →</a>
-                </div>
               </div>
             </div>
             {related.length > 0 && (
