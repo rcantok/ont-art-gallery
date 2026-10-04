@@ -1,0 +1,10 @@
+# Ham eser fotoğrafları (~540 MB): sitede yalnızca images/ altındaki hazırlanmış kopyalar kullanılır
+ON.TOK/
+
+# Ödev kanıtları ve ekran kayıtları — yerelde kalır
+*.mov
+Ekran Resmi *.png
+Ekran Kaydı *
+
+# macOS
+.DS_Store

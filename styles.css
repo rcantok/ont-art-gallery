@@ -1,0 +1,158 @@
+/* ONT Art Gallery — galeri havasında sade tasarım: bol boşluk, eserler öne çıkar */
+
+:root {
+  --bg: #f7f5f1;          /* galeri duvarı */
+  --surface: #ffffff;
+  --matte: #ece8e1;       /* eser görselinin arkasındaki paspartu tonu */
+  --ink: #1d1b19;
+  --ink-muted: #5f5a53;
+  --line: #e4dfd6;
+  --accent: #1d1b19;      /* düğmeler: mürekkep siyahı, eserlerle yarışmaz */
+  --on-accent: #ffffff;
+  --available: #2f6b4f;
+  --out: #9a3b2e;
+  --sold: #6f6a63;
+
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius: 4px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.15; }
+
+/* Üst kısım */
+.site-header {
+  text-align: center;
+  padding: var(--space-12) var(--space-4) var(--space-8);
+}
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.site-header h1 { font-size: clamp(40px, 8vw, 64px); margin-top: var(--space-2); }
+.tagline { margin-top: var(--space-2); color: var(--ink-muted); }
+
+main { max-width: 1120px; margin: 0 auto; padding: 0 var(--space-4); }
+
+/* Ressam hakkında */
+.about {
+  max-width: 640px;
+  margin: 0 auto var(--space-12);
+  text-align: center;
+}
+.about h2 { font-size: 28px; margin-bottom: var(--space-3); }
+.about p { color: var(--ink-muted); }
+
+/* Katalog */
+.catalog h2 { font-size: 32px; text-align: center; }
+.catalog-note {
+  text-align: center;
+  color: var(--ink-muted);
+  margin: var(--space-2) 0 var(--space-8);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-6);
+}
+
+/* Eser kartı */
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.card-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;          /* kare alan: yatay ve dikey eserler dengeli görünür */
+  object-fit: contain;          /* eser kırpılmaz; dikey/yatay her oran sığar */
+  background: var(--matte);
+  padding: var(--space-4);
+  height: auto;
+}
+.card-body { display: flex; flex-direction: column; flex: 1; padding: var(--space-6); }
+
+.tags { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.tags li {
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-muted);
+}
+
+.card h3 { font-size: 26px; margin-top: var(--space-3); }
+.meta { font-size: 13px; color: var(--ink-muted); margin-top: var(--space-1); }
+.desc { margin-top: var(--space-3); }
+
+/* Orijinal / Baskı satırları */
+.offers { margin-top: auto; padding-top: var(--space-6); }
+.offer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+}
+.offer dt { font-weight: 600; }
+.offer-note { display: block; font-weight: 400; font-size: 12px; color: var(--ink-muted); }
+.offer .price { text-align: right; font-weight: 600; }
+.offer .status { font-size: 13px; color: var(--ink-muted); }
+.offer .action { justify-self: end; }
+.status-available { color: var(--available) !important; }
+.status-out { color: var(--out) !important; }
+.status-sold { color: var(--sold) !important; font-style: italic; }
+
+/* Düğmeler — sipariş ve stok bildirimi formları 1.6'da bağlanacak */
+.btn {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius);
+  font: 500 13px/1 var(--font-sans);
+  cursor: pointer;
+}
+.btn-primary { background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent); }
+.btn-secondary { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:focus-visible, a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* Alt kısım */
+.site-footer {
+  max-width: 1120px;
+  margin: var(--space-12) auto 0;
+  padding: var(--space-8) var(--space-4) var(--space-12);
+  border-top: 1px solid var(--line);
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 14px;
+}
+.site-footer p + p { margin-top: var(--space-2); }
+.site-footer a { color: var(--ink); }
+.copyright { font-size: 12px; }

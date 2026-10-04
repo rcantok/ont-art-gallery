@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONT Art Gallery</title>
+  <meta name="description" content="Orijinal resimler ve numaralı, sınırlı sayıda baskılar.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <p class="eyebrow">Galeri</p>
+    <h1>ONT Art Gallery</h1>
+    <p class="tagline">Orijinal eserler ve numaralı, sınırlı sayıda baskılar</p>
+  </header>
+
+  <main>
+
+    <!-- Ressam hakkında -->
+    <section class="about" aria-labelledby="about-title">
+      <h2 id="about-title">Ressam Hakkında</h2>
+      <p>
+        ONT, ressam Osman Nihat Tok'un baş harflerinden gelir.
+        Orhan Cebrailoğlu'nun öğrencisi olan Osman Nihat Tok, soyut resim ve şiir tutkunu bir ressamdır.
+        Eserlerinde ışığı ve rengi serbest fırça darbeleriyle anlatır.
+      </p>
+    </section>
+
+    <!-- Katalog -->
+    <section class="catalog" aria-labelledby="catalog-title">
+      <h2 id="catalog-title">Eserler</h2>
+      <p class="catalog-note">Her eserin tek bir orijinali vardır. Baskılar numaralı ve sınırlı sayıdadır.</p>
+
+      <div class="grid">
+
+        <!-- ont-001 — Göl manzarası (ON.TOK/35x50/20200104_141045.jpg). DOLDURULACAK: adı geçici, yıl; teknik ressamın onayını bekliyor -->
+        <article class="card" data-product-id="ont-001">
+          <img class="card-image" src="images/gol-kiyisi.jpg" alt="Göl kıyısı manzarası: önde sazlıklar, ortada sarı bir tarla ve ağaç sırası, arkada mor tepeler" width="1200" height="852" loading="lazy">
+          <div class="card-body">
+            <ul class="tags" aria-label="Etiketler">
+              <li>Manzara</li>
+              <li>Akrilik</li>
+            </ul>
+            <h3>Göl Kıyısı</h3>
+            <p class="meta">Tuval pano üzerine akrilik · 35 × 50 cm</p>
+            <p class="desc">Sazlıklarla çevrili sakin bir göl, ardında altın sarısı bir tarla ve akşam ışığında morlaşan tepeler.</p>
+
+            <dl class="offers">
+              <div class="offer">
+                <dt>Orijinal</dt>
+                <dd class="price">8.000 TL</dd>
+                <dd class="status status-available">Satışta</dd>
+                <dd class="action"><button type="button" class="btn btn-primary" disabled title="Sipariş formu yakında">Sipariş Ver</button></dd>
+              </div>
+              <div class="offer">
+                <dt>Baskı <span class="offer-note">Numaralı, sınırlı sayıda</span></dt>
+                <dd class="price">Yakında</dd>
+                <dd class="status">Hazırlanıyor</dd>
+                <dd class="action"><button type="button" class="btn btn-secondary" disabled title="Bildirim formu yakında">Baskı Çıkınca Haber Ver</button></dd>
+              </div>
+            </dl>
+          </div>
+        </article>
+
+        <!-- ont-002 — Soyut (ON.TOK/50×70/20200104_133124.jpg). DOLDURULACAK: adı geçici, teknik, yıl -->
+        <article class="card" data-product-id="ont-002">
+          <img class="card-image" src="images/soyut-kompozisyon.jpg" alt="Soyut kompozisyon: sarı ve açık mavi zemin üzerinde lacivert fırça darbeleri, sarı ve beyaz damlatma çizgiler" width="856" height="1200" loading="lazy">
+          <div class="card-body">
+            <ul class="tags" aria-label="Etiketler">
+              <li>Soyut</li>
+            </ul>
+            <h3>Soyut Kompozisyon</h3>
+            <p class="meta">50 × 70 cm · Teknik bilgisi yakında</p>
+            <p class="desc">Sarı ile mavinin buluştuğu bir zeminde lacivert fırça darbeleri, damlatılmış sarı ve beyaz çizgiler; hareketli, enerjik bir kompozisyon.</p>
+
+            <dl class="offers">
+              <div class="offer">
+                <dt>Orijinal</dt>
+                <dd class="price">12.500 TL</dd>
+                <dd class="status status-available">Satışta</dd>
+                <dd class="action"><button type="button" class="btn btn-primary" disabled title="Sipariş formu yakında">Sipariş Ver</button></dd>
+              </div>
+              <div class="offer">
+                <dt>Baskı <span class="offer-note">Numaralı, sınırlı sayıda</span></dt>
+                <dd class="price">Yakında</dd>
+                <dd class="status">Hazırlanıyor</dd>
+                <dd class="action"><button type="button" class="btn btn-secondary" disabled title="Bildirim formu yakında">Baskı Çıkınca Haber Ver</button></dd>
+              </div>
+            </dl>
+          </div>
+        </article>
+
+        <!-- ont-003 — At portresi (ON.TOK/50×70/20200104_132539.jpg). DOLDURULACAK: adı geçici, teknik, yıl -->
+        <article class="card" data-product-id="ont-003">
+          <img class="card-image" src="images/at-portresi.jpg" alt="At portresi: açık mavi zemin önünde, koyu konturlarla çizilmiş beyaz bir at başı" width="852" height="1200" loading="lazy">
+          <div class="card-body">
+            <ul class="tags" aria-label="Etiketler">
+              <li>Portre</li>
+            </ul>
+            <h3>At Portresi</h3>
+            <p class="meta">50 × 70 cm · Teknik bilgisi yakında</p>
+            <p class="desc">Gökyüzü mavisine dönük bir at başı; kalın, serbest fırça darbeleri ve koyu konturlarla güçlü bir portre.</p>
+
+            <dl class="offers">
+              <div class="offer">
+                <dt>Orijinal</dt>
+                <dd class="price">12.500 TL</dd>
+                <dd class="status status-available">Satışta</dd>
+                <dd class="action"><button type="button" class="btn btn-primary" disabled title="Sipariş formu yakında">Sipariş Ver</button></dd>
+              </div>
+              <div class="offer">
+                <dt>Baskı <span class="offer-note">Numaralı, sınırlı sayıda</span></dt>
+                <dd class="price">Yakında</dd>
+                <dd class="status">Hazırlanıyor</dd>
+                <dd class="action"><button type="button" class="btn btn-secondary" disabled title="Bildirim formu yakında">Baskı Çıkınca Haber Ver</button></dd>
+              </div>
+            </dl>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p><strong>Teslimat:</strong> Türkiye içi sigortalı kargo; her eser özel olarak paketlenir.</p>
+    <p><strong>İletişim:</strong> <a href="mailto:ragipcantok@gmail.com">ragipcantok@gmail.com</a></p>
+    <p class="copyright">© ONT Art Gallery</p>
+  </footer>
+
+</body>
+</html>
