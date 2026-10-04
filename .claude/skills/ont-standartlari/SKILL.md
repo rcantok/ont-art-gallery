@@ -5,7 +5,7 @@ description: ONT Art Gallery (AtölyeKart) React sayfasının kuralları — bil
 
 # ONT Art Gallery standartları
 
-İki bölüm: **bileşenler** (`index.html`'deki her React bileşeni) ve **webhook** (Sipariş Ver ve Baskı Çıkınca Haber Ver formlarının gönderdiği veri). Projenin iş bağlamı ve `PRODUCTS` alanları CLAUDE.md'dedir.
+İki bölüm: **bileşenler** (`index.html`'deki her React bileşeni) ve **webhook** (Sipariş ve Benzerini Haber Ver formlarının gönderdiği veri). Projenin iş bağlamı ve `PRODUCTS` alanları CLAUDE.md'dedir.
 
 ## Bileşen standartları
 
@@ -16,8 +16,8 @@ description: ONT Art Gallery (AtölyeKart) React sayfasının kuralları — bil
 
 **Veri**
 - Eser bilgisi yalnızca `PRODUCTS`'tan okunur; bileşenin içine ad, fiyat, ölçü, görsel yolu yazılmaz.
-- Bir eseri taşıyan bileşen tek bir `product` prop'u alır. Prop adı gönderen ve alan tarafta harfi harfine aynıdır — uyuşmazsa `product` `undefined` gelir ve sayfa beyaz kalır (1.4'te yaşandı).
-- Ekrandaki metin veriden yardımcılarla türetilir: fiyat `formatPrice`, künye `metaLine`, etiketler `tagsOf`, durum `STATUS_LABELS`. Aynı biçimlendirmeyi bileşende yeniden yazmak yerine yardımcıyı kullan ya da genişlet.
+- Bir eseri taşıyan bileşen tek bir `product` prop'u alır; sayfalar eseri `id` ile `byId`'den bulur. Prop adı gönderen ve alan tarafta harfi harfine aynıdır — uyuşmazsa `product` `undefined` gelir ve sayfa beyaz kalır (1.4'te yaşandı).
+- Ekrandaki metin veriden yardımcılarla türetilir: fiyat `formatPrice`, künye `metaLine`, etiketler `tagsOf`, durum `STATUS_LABELS`, satın alınabilirlik `isBuyable`. Aynı biçimlendirmeyi bileşende yeniden yazmak yerine yardımcıyı kullan ya da genişlet.
 - Bilinmeyen bilgi `null` kalır ve ekranda "yakında" olarak görünür.
 
 **Görsel ve stil**
@@ -28,7 +28,7 @@ description: ONT Art Gallery (AtölyeKart) React sayfasının kuralları — bil
 
 **Erişilebilirlik**
 - Tıklanan her şey `<button>` ya da `<a>`; yazısız düğmeler `aria-label` taşır.
-- Klavye: pencereler Escape ile kapanır, açılınca odak içeri girer, kapanınca odak açan öğeye döner; ok tuşları önceki/sonraki.
+- Sayfa geçişleri gerçek bağlantıdır (`<a href="#/...">`); tarayıcının geri/ileri tuşu çalışır, yeni sayfada en üste kaydırılır. Etkin menü öğesi `aria-current="page"` taşır.
 - Dokunma hedefleri en az 44 px.
 
 **Değişiklikten sonra**
@@ -36,36 +36,40 @@ Headless Chrome ile ekran görüntüsü al ve konsolu oku (Babel uyarısı dış
 
 ## Webhook formatı
 
-Formlar bir olay olduğunda tek bir JSON nesnesini `POST` ile `WEBHOOK_URL`'ye gönderir.
+Site çok sayfalı bir mağazadır (hash yönlendirme: `#/`, `#/eser/<id>`, `#/sanatci`, `#/iletisim`, `#/sepet`, `#/siparis`, `#/hesap`). İki olay `POST` ile `WEBHOOK_URL`'ye tek bir JSON nesnesi olarak gider (`sendWebhook`). Baskı satışı yoktur; her eser tek orijinaldir.
 
-### Sipariş — `event: "order"`
+### Sipariş — `event: "order"` (Sipariş sayfası, sepetin tamamı)
 
 ```json
 {
   "event": "order",
-  "name": "Ayşe Yılmaz",
-  "productId": "ont-002",
-  "productName": "Soyut Kompozisyon",
-  "item": "original",
-  "price": 12500,
-  "quantity": 1,
-  "phone": "+90 532 000 00 00",
-  "email": "ayse@ornek.com",
-  "address": "Işık Mah. Örnek Sok. No: 3 D: 4, Kadıköy / İstanbul",
+  "name": "Deniz Test",
+  "productId": "ont-001,ont-064",
+  "productName": "Sazlıklı Göl, Kızıl Liman",
+  "items": [
+    { "productId": "ont-001", "productName": "Sazlıklı Göl", "price": 8000 },
+    { "productId": "ont-064", "productName": "Kızıl Liman", "price": 12500 }
+  ],
+  "quantity": 2,
+  "total": 20500,
+  "phone": "+90 555 000 00 00",
+  "email": "deniz.test@ornek.com",
+  "address": "Işık Mah. Deneme Sok. No: 3 D: 4, Kadıköy / İstanbul",
+  "payment": "card-demo",
   "source": "ont-art-gallery"
 }
 ```
 
-### Stok bildirimi — `event: "stock_notify"`
+### Benzerini haber ver — `event: "stock_notify"` (yalnızca `original.status: "sold"` eserin sayfasında)
 
 ```json
 {
   "event": "stock_notify",
-  "name": "Ayşe Yılmaz",
-  "productId": "ont-002",
-  "productName": "Soyut Kompozisyon",
-  "item": "print",
-  "email": "ayse@ornek.com",
+  "name": "Ece Deneme",
+  "productId": "ont-095",
+  "productName": "Soyut At",
+  "item": "similar",
+  "email": "ece.deneme@ornek.com",
   "source": "ont-art-gallery"
 }
 ```
@@ -74,24 +78,22 @@ Formlar bir olay olduğunda tek bir JSON nesnesini `POST` ile `WEBHOOK_URL`'ye g
 
 | Alan | Kural |
 |---|---|
-| `event` | `"order"` ya da `"stock_notify"` |
-| `name` | Formdan, zorunlu, baştaki/sondaki boşluk kırpılır |
-| `productId` / `productName` | `PRODUCTS`'taki `id` / `title` — formdan alınmaz |
-| `item` | `"original"` ya da `"print"`. Ödev sözleşmesine galeri için eklenen alan: hangi kalemin istendiğini taşır |
-| `price` | Siparişte; o kalemin `PRODUCTS`'taki fiyatı, **sayı** (TL). Ek alan; fiyatı `null` olan kalem sipariş edilemez |
-| `quantity` | Siparişte sayı. Orijinal için her zaman `1` (formda gösterilmez); baskıda 1 ile `print.remaining` arası |
-| `phone` | Yalnızca siparişte, zorunlu |
-| `email` | Her ikisinde zorunlu, `type="email"` ile doğrulanır |
-| `address` | Yalnızca siparişte, zorunlu teslimat adresi (tek metin: mahalle, sokak, no, ilçe / il). Ek alan: eserler kargoyla gönderilir |
+| `productId` / `productName` | Ödev sözleşmesi tek eser bekler; sepet birden çok eser taşıdığı için virgülle birleştirilmiş kimlik/ad. Ayrıntı `items`'ta |
+| `items` | Her eser: `productId` (= `id`), `productName` (= `title`), `price` (sayı, TL) — hepsi `PRODUCTS`'tan, formdan alınmaz |
+| `quantity` | Eser sayısı (her orijinal tek adet; sepete bir eser en fazla bir kez girer) |
+| `total` | `items` fiyatlarının toplamı, sayı. Kargo dahil değil (onayda bildirilir) |
+| `name`, `email`, `phone`, `address` | Formdan, zorunlu, baş/son boşluk kırpılır. `phone` ve `address` yalnızca siparişte |
+| `payment` | Sabit `"card-demo"` |
+| `item` | Yalnızca `stock_notify`'da, sabit `"similar"` |
 | `source` | Sabit `"ont-art-gallery"` |
 
-**Hangi düğme hangi olay:** Orijinal `available` → Sipariş Ver (`order`, `item: "original"`). Baskı `in_stock` → Sipariş Ver (`order`, `item: "print"`). Baskı `preparing` ya da `sold_out` → Baskı Çıkınca Haber Ver (`stock_notify`, `item: "print"`). Satılmış orijinalde düğme yok.
+### Ödeme formu bir demodur — kart verisi asla gönderilmez
+
+Sipariş sayfasındaki kart alanlarının `name` özniteliği yoktur ve kod tarafından okunmaz; `autoComplete="off"` taşırlar. Fişe yalnızca `"payment": "card-demo"` girer. Kart numarası, son kullanma, CVC ya da kart üzerindeki ad hiçbir koşulda payload'a, `localStorage`'a ya da konsola yazılmaz. Gerçek ödeme (iyzico, Stripe) ancak sunucu tarafında ve ödeme sağlayıcısının kendi formuyla yapılır.
 
 ### Gönderim ve geri bildirim
 
-- `fetch(WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })`.
-- Gönderim sürerken düğme pasif ve "Gönderiliyor…" yazar. `res.ok` ise formun yerine kısa bir onay metni çıkar ("Siparişiniz alındı, size e-postayla dönüş yapacağız."); değilse ya da ağ hatasında form kalır ve hata metni gösterilir — ziyaretçinin yazdıkları silinmez.
-- `WEBHOOK_URL` dosyanın başında tek bir sabittir. Hafta 1'de doğrudan webhook.site adresidir; secret koruması ve sunucu tarafına taşıma Hafta 2'nin işidir, o zamana kadar bu adrese hassas bir anahtar konmaz.
-- webhook.site adresinde CORS varsayılan olarak kapalıdır ve tarayıcı `application/json` gönderiminden önce ön kontrol (OPTIONS) isteği yapar; kapalıyken form gönderimi engellenir. Açmak için: `curl -X PUT https://webhook.site/token/<uuid> -H 'Content-Type: application/json' -d '{"cors": true}'` (ya da arayüzdeki CORS seçeneği).
-- webhook.site adresi herkese açıktır: testte gerçek ad, telefon, adres kullanılmaz.
-- Doğrulama: her iki olay için webhook.site'ta gelen gövdeyi aç ve alanları yukarıdaki tabloyla tek tek karşılaştır.
+- Gönderim sürerken düğme pasif ve "Gönderiliyor…" yazar. `res.ok` ise onay görünür (siparişte sepet boşalır); değilse form ve yazılanlar kalır, hata metni gösterilir.
+- `WEBHOOK_URL` dosyanın başında tek sabittir. Hafta 1'de webhook.site test adresidir (herkese açık, geçici): testte gerçek ad, telefon, adres kullanılmaz. Sunucuya taşıma Hafta 2'de.
+- webhook.site adresinde CORS varsayılan olarak kapalıdır; `application/json` gönderimi tarayıcıda ön kontrol (OPTIONS) isteği yapar. Açmak için: `curl -X PUT https://webhook.site/token/<uuid> -H 'Content-Type: application/json' -d '{"cors": true}'`.
+- Doğrulama: `window.fetch`'i test kopyasında yakalayıp payload'ı alan alan kontrol et; kart verisinin payload'da olmadığını ayrıca doğrula. Son kanıt için webhook.site'ta gelen gövdeyi aç.

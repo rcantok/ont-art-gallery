@@ -7,30 +7,35 @@ Ressam **Osman Nihat Tok**'un (proje sahibinin babası; ONT baş harfleri) eserl
 - **Sektör:** Özgün resim satışı.
 - **Hedef kitle:** Sanat severler ve koleksiyoncular. Ton galeri dili: sade, saygılı, eseri ve ressamı öne çıkaran. Metinler künyeye (teknik, ölçü, yıl) ve eserin hikâyesine dayanır; kampanya ve indirim dili bu markaya uymaz.
 - **Teslimat:** Yalnızca Türkiye içi sigortalı kargo, özel paketleme. Çerçeve politikası henüz netleşmedi; şimdilik eserler çerçevesiz kabul ediliyor.
-- **Görsel kimlik:** `yeni tasarim.html` (Claude Design şablonu) temel alınır ve `index.html`'de uygulanmıştır: beyaz zemin, Archivo / Bodoni Moda / Manrope, koyu kiremit vurgu `#A3311A`, eserlerden oluşan kayan hero, konu filtreli eser ızgarası, eser penceresi, koyu iletişim bölümü. Şablondaki bilgisi olmayan bölümler (sergiler, zaman çizelgesi, alıntı, adres/telefon) bilinçli olarak çıkarıldı; bilgi gelince eklenir. Eser görselleri ızgarada ve pencerede `object-fit: contain` ile kırpılmadan gösterilir (hero dekoratiftir, orada kırpılabilir). `hafta1-html.html` + `styles.css` 1.1'in eski, sade tasarımıdır.
+- **Görsel kimlik:** `yeni tasarim.html` (Claude Design şablonu) temel alınır ve `index.html`'de uygulanmıştır: beyaz zemin, Archivo / Bodoni Moda / Manrope, koyu kiremit vurgu `#A3311A`, eserlerden oluşan kayan hero, konu ve ölçü filtreli eser ızgarası, koyu iletişim sayfası. Şablondaki bilgisi olmayan bölümler (sergiler, zaman çizelgesi, alıntı, adres/telefon) bilinçli olarak çıkarıldı; bilgi gelince eklenir. Eser görselleri ızgarada ve eser sayfasında `object-fit: contain` ile kırpılmadan gösterilir (hero dekoratiftir, orada kırpılabilir). `hafta1-html.html` + `styles.css` 1.1'in eski, sade tasarımıdır.
 
 ## Ressam
 
-Osman Nihat Tok — Orhan Cebrailoğlu'nun öğrencisi; soyut resim ve şiir tutkunu bir ressam. Ressam hakkında bundan fazlası (doğum yılı, sergiler, ödüller) bilinmiyor; yazılacaksa proje sahibine sorulur.
+Osman Nihat Tok — Orhan Cebrailoğlu'nun öğrencisi; resim, şiir ve botanik tutkunu bir ressam; soyut resme özel ilgi. Fotoğrafı `images/sanatci.jpg` (atölyesinde). Instagram: https://www.instagram.com/osmantok/ (`INSTAGRAM` sabiti). Ressam hakkında bundan fazlası (doğum yılı, sergiler, ödüller) bilinmiyor; yazılacaksa proje sahibine sorulur.
 
 ## Ürün modeli
 
-Her eser iki ayrı satış kalemi taşır:
+Yalnızca **orijinal** satılır; her eser tek adettir. Durumu: `Satışta` ya da `Satıldı`. Baskı satışı kullanıcı kararıyla kaldırıldı. Satılan eserin sayfasında "Satıldı" ve **Benzerini haber ver** formu (`stock_notify`) çıkar; şu an satılmış eser yok, bu yüzden form sitede görünmüyor.
 
-- **Orijinal** — tek adet. Durumu: `Satışta` ya da `Satıldı`.
-- **Baskı** — numaralı, sınırlı sayıda (örn. A3 · 30 adet). Durumu stok adedine bağlı: kalan adet ya da `Tükendi`. Tükenen ya da henüz basılmamış baskı için "Baskı Çıkınca Haber Ver" (stok bildirimi) düğmesi gösterilir.
+### Mağaza akışı
+
+- Sayfalar hash ile ayrılır: `#/` (hero + katalog), `#/eser/<id>`, `#/sanatci`, `#/iletisim`, `#/sepet`, `#/siparis`, `#/hesap`. Modal yok; geri/ileri tuşu çalışır.
+- Eser sayfası: **Şimdi Al** (sepete ekler, siparişe gider) ve **Sepete Ekle**. Sepet `localStorage`'da (`ont-cart`), bir eser en fazla bir kez.
+- Sipariş sayfası: teslimat bilgileri + **demo kart formu**. Kart alanları okunmaz ve gönderilmez; fişte yalnızca `payment: "card-demo"`. Gerçek ödeme sunucu ve ödeme sağlayıcısı gerektirir.
+- Kargo ücreti belli değil: sepette "Onayda bildirilir" yazar, uydurulmaz.
+- Hesap sayfası şimdilik yalnızca arayüz ("yakında"); kullanıcı kararı.
 
 Her eserin kalıcı bir kimliği vardır (`ont-001`, `ont-002`…), HTML'de `data-product-id` olarak durur.
 
 ### Veri kaynağı: `PRODUCTS` (index.html)
 
-React sürümünde tüm eser bilgisi tek bir `PRODUCTS` dizisindedir; hero slaytları, filtre düğmeleri, ızgara, eser penceresi ve Sanatçı görseli buradan türetilir. Yeni eser = diziye bir nesne.
+React sürümünde tüm eser bilgisi tek bir `PRODUCTS` dizisindedir; hero slaytları, filtre düğmeleri, ızgara, eser sayfası, sepet ve sipariş fişi buradan türetilir. Yeni eser = diziye bir nesne.
 
-- Alanlar: `id`, `title`, `subject` (konu → filtre), `technique` (kısa teknik etiketi), `medium` (künyedeki uzun hali), `size` (→ ölçü filtresi), `year`, `featured` (yalnızca hero'da dönen birkaç eserde `true`), `desc`, `image {src, thumb, alt, width, height}`, `source` (ON.TOK'taki kaynak fotoğraf), `original {price, status}`, `print {price, status}`.
-- Görseller iki boy: `images/<id>.jpg` (1400 px, eser penceresi ve hero) ve `images/thumbs/<id>.jpg` (600 px, ızgara). 95 eserde sayfanın hızlı açılması ızgaranın küçük boyu kullanmasına bağlı.
+- Alanlar: `id`, `title`, `subject` (konu → filtre), `technique` (kısa teknik etiketi), `medium` (künyedeki uzun hali), `size` (→ ölçü filtresi), `year`, `featured` (yalnızca hero'da dönen birkaç eserde `true`), `desc`, `image {src, thumb, alt, width, height}`, `source` (ON.TOK'taki kaynak fotoğraf), `original {price, status}`.
+- Görseller iki boy: `images/<id>.jpg` (1400 px, eser sayfası ve hero) ve `images/thumbs/<id>.jpg` (600 px, ızgara). 95 eserde sayfanın hızlı açılması ızgaranın küçük boyu kullanmasına bağlı.
 - Bilinmeyen alan `null`; ekranda "yakında" metni yardımcılardan gelir (`formatPrice`, `metaLine`, `tagsOf`).
 - Fiyatlar sayıdır (TL); "8.000 TL" biçimini `formatPrice` üretir.
-- Durum anahtarları → `STATUS_LABELS`: original `available` | `sold`; print `preparing` | `in_stock` | `sold_out`. Baskı basılınca `print`'e `edition` ve `remaining` eklenir.
+- Durum anahtarları → `STATUS_LABELS`: `available` | `sold`. Satın alınabilirlik `isBuyable` (satışta ve fiyatı belli).
 - Webhook eşleşmesi (1.6): `productId` = `id`, `productName` = `title`; fiyat sayı olarak gönderilir.
 
 ## Kategoriler
@@ -52,7 +57,6 @@ Katalogdaki her bilgi gerçek olmalı. Bilinmeyen bilgi (ad, teknik, yıl) uydur
 - **Fiyatlar (orijinal):** 35×50 → 8.000 TL, 50×70 → 12.500 TL.
 - **Katalog kapsamı:** `35x50/` ve `50×70/` klasörlerinin tamamı eklendi (95 eser, `ont-001`–`ont-095`). Duvarda çekilmiş tekrar kareler ve iki tablonun bir arada çekildiği kare katalog dışı. `Karışık/` kullanıcı kararıyla şimdilik eklenmedi (ölçü ve fiyat net değil).
 - **Eser adları** kompozisyondan türetilmiş geçici adlardır (her kayıtta `DOLDURULACAK: ad geçici`); ressamın verdiği adlar gelince değiştirilir.
-- **Baskılar** henüz basılmadı: tüm eserlerde durum "Hazırlanıyor", düğme "Baskı Çıkınca Haber Ver" (stok bildirimi). Baskı basıldığında fiyat ve kalan adet bu satıra yazılır.
 
 ## Ödev yol haritası (Hafta 1)
 
@@ -63,8 +67,12 @@ Adımlar sırayla ilerler; her adım bir öncekinin üzerine kurulur.
 3. **1.3 Veri modeli** — plan modunda planlandı, `PRODUCTS` dizisine geçildi. Ekran metinleri ve tam sayfa görüntüsü değişiklik öncesiyle birebir aynı; filtre artık `App`'te, eser penceresinde önceki/sonraki okları ve ←/→ kısayolları var. ✅
 4. **1.4 Hata yönetimi** — (a) yanlış prop adı (`prduct={p}`): sayfa beyaz kaldı, konsol `Cannot read properties of undefined (reading 'id') at ProductCard` dedi; iz gönderen tarafa (`ProductList`) sürülüp düzeltildi. (b) bozuk CSS (`.art` `aspect-ratio: 4 / 50`): mesaj yok, yalnızca görüntüden teşhis edildi. Her ikisinde dosya yedekle birebir aynı haline döndü. ✅
 5. **1.5** — proje skill'leri `.claude/skills/` altında: `ont-standartlari` (bileşen standartları + webhook formatı, ödevin istediği) ve `eser-ekle` (ON.TOK fotoğrafından kataloğa eser ekleme; araçlar `hazirla.py` ve `onizleme.py`). ✅ GitHub: `rcantok/ont-art-gallery` (gh CLI ile oluşturuldu — bu oturumda GitHub MCP yoktu), yayın: https://rcantok.github.io/ont-art-gallery/ (GitHub Pages, `main` / kök). `.gitignore` ON.TOK, ekran kayıtları ve ekran görüntülerini dışarıda tutar. Katalog QR'ı: İletişim bölümünde `SiteQr` (qrcode-generator, CDN) `SITE_URL`'yi kodlar; jsQR ile okunup adres doğrulandı. Alt ajan denemesi (opsiyonel) yapılmadı.
-6. **1.6 Webhook'lar** — eser penceresinde `RequestForm`: Sipariş Ver (ad, e-posta, telefon, teslimat adresi → `order`) ve Baskı Çıkınca Haber Ver (ad, e-posta → `stock_notify`). Fiş `buildPayload` ile `ont-standartlari` sözleşmesine göre kurulur, `WEBHOOK_URL`'ye (`index.html` başında; ücretsiz, geçici webhook.site adresi, CORS API ile açıldı) gider. İki olay webhook.site'ta alan alan doğrulandı; hata yolunda form ve yazılanlar korunuyor. Secret koruma ve sunucuya taşıma Hafta 2'de. ✅
+6. **1.6 Webhook'lar** — ilk sürümde eser penceresindeki formlarla yapıldı ve kanıtlandı. Mağazaya geçişte: `order` Sipariş sayfasından sepetin tamamını (`items`, `total`) taşır; `stock_notify` satılmış eserde "Benzerini haber ver" (`item: "similar"`). Fişler `orderPayload` / `notifyPayload` ile `ont-standartlari` sözleşmesine göre kurulur, `WEBHOOK_URL`'ye (`index.html` başında; ücretsiz, geçici webhook.site adresi, CORS API ile açıldı) gider. İki olay webhook.site'ta alan alan doğrulandı; hata yolunda form ve yazılanlar korunuyor. Secret koruma ve sunucuya taşıma Hafta 2'de. ✅
 
 ### Webhook veri sözleşmesi (1.6)
 
-Tam sözleşme ve kurallar `ont-standartlari` skill'indedir. Ödevin alanlarına galeri için eklenenler: `item` (`original` | `print`), `price` (sayı), siparişte `address`.
+Tam sözleşme ve kurallar `ont-standartlari` skill'indedir. Ödevin alanlarına galeri için eklenenler: siparişte `items`, `total`, `address`, `payment`; bildirimde `item`.
+
+## Hafta 1 sonrası: mağaza
+
+Kullanıcı isteğiyle tek sayfa + modal yapısı çok sayfalı mağazaya dönüştürüldü (eser sayfası, sepet, sipariş, demo ödeme, hesap arayüzü, sanatçı fotoğrafı ve Instagram). Bileşenler: `Header`, `Hero`, `HomePage`, `ProductImage`, `ProductCard`, `ProductList`, `ProductPage`, `NotifySimilar`, `CartPage`, `CheckoutPage`, `ArtistPage`, `ContactPage`, `SiteQr`, `AccountPage`, `NotFound`, `App` (yönlendirme `useRoute`, sepet `useCart`).

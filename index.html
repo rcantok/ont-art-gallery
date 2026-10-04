@@ -4,15 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ONT Art Gallery — Osman Nihat Tok</title>
-  <meta name="description" content="Ressam Osman Nihat Tok'un orijinal eserleri ve numaralı, sınırlı sayıda baskıları.">
+  <meta name="description" content="Ressam Osman Nihat Tok'un orijinal eserleri.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Bodoni+Moda:opsz,wght@6..96,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* Tasarım: Claude Design şablonundan uyarlandı (yeni tasarim.html) */
-    :root { --accent: #A3311A; --ink: #161616; --muted: #4a4a4a; --matte: #e9e6e0; }
+    :root { --accent: #A3311A; --ink: #161616; --muted: #4a4a4a; --matte: #e9e6e0; --line: #e4e2dd; --soft: #f3f2ef; }
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
     body { margin: 0; background: #fff; color: var(--ink); font-family: 'Manrope', system-ui, sans-serif; }
     a { color: var(--ink); text-decoration: none; }
     a:hover { color: #8f2a14; }
@@ -21,17 +20,23 @@
     .wide { max-width: 1240px; margin: 0 auto; }
     .h2 { margin: 0; font-weight: 800; font-size: clamp(30px, 3.4vw, 44px); letter-spacing: -.01em; }
     .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; }
+    :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
-    /* Üst menü */
-    .site-header { position: absolute; top: 0; left: 0; right: 0; z-index: 20; background: rgba(255,255,255,.72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(22,22,22,.08); }
+    /* Üst menü — ana sayfada hero'nun üstünde, diğer sayfalarda sabit */
+    .site-header { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(22,22,22,.08); }
+    .is-home .site-header { position: absolute; left: 0; right: 0; background: rgba(255,255,255,.72); }
     .site-header .wide { padding: 10px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 32px; }
     .logo { display: flex; flex-direction: column; align-items: center; line-height: 1; padding: 6px 0; }
     .logo b { font-family: 'Bodoni Moda', Georgia, serif; font-weight: 500; font-size: 24px; letter-spacing: .22em; text-transform: uppercase; }
     .logo small { font-size: 10px; font-weight: 600; letter-spacing: .42em; text-transform: uppercase; margin-top: 6px; color: var(--muted); }
-    .site-header nav { display: flex; flex-wrap: wrap; gap: 4px 32px; font-size: 14px; font-weight: 700; }
-    .site-header nav a { padding: 12px 2px; }
+    .site-header nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 28px; font-size: 14px; font-weight: 700; }
+    .site-header nav a { padding: 12px 2px; display: inline-flex; align-items: center; gap: 6px; }
+    .site-header nav a[aria-current="page"] { color: var(--accent); }
+    .icon-link { position: relative; min-width: 44px; justify-content: center; }
+    .icon-link svg { width: 22px; height: 22px; }
+    .badge { position: absolute; top: 4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: var(--accent); color: #fff; font-size: 11px; line-height: 18px; text-align: center; }
 
-    /* Hero: ressamın eserleri kayan slayt olarak */
+    /* Hero */
     .hero { position: relative; height: 620px; overflow: hidden; background: #2a1a12; }
     .slide { position: absolute; inset: 0; transition: opacity 1.4s ease, filter 1.4s ease, transform 7s ease; opacity: 0; filter: blur(28px); transform: scale(1.06); }
     .slide.on { opacity: 1; filter: blur(0); transform: scale(1); z-index: 1; }
@@ -51,108 +56,135 @@
     .art { position: relative; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: var(--matte); transition: transform .5s ease; }
     .art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 8%; }
 
-    /* Eserler */
-    #eserler { padding: 96px 24px; background: #f3f2ef; }
-    .works-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 40px; }
-    .works-head p { margin: 10px 0 0; font-size: 16px; color: var(--muted); }
+    /* Eser ızgarası */
+    .catalog { padding: 96px 24px; background: var(--soft); }
+    .works-head { margin-bottom: 32px; display: flex; flex-direction: column; gap: 18px; }
     .filter-groups { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
     .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .filters .label { min-width: 52px; }
-    .filters .label { font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
-    .count { margin: 0 0 24px; font-size: 14px; color: var(--muted); }
-    .empty { padding: 48px 0; color: var(--muted); }
+    .filters .label { min-width: 52px; font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
     .filters button { min-height: 44px; padding: 0 18px; border-radius: 99px; cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; border: 1.5px solid #c9c6bf; background: transparent; color: var(--ink); }
     .filters button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
+    .count { margin: 0 0 24px; font-size: 14px; color: var(--muted); }
+    .empty { padding: 48px 0; color: var(--muted); }
     .works { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 40px 28px; }
-    .work { display: flex; flex-direction: column; gap: 14px; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+    .work { display: flex; flex-direction: column; gap: 14px; }
     .work .imgbox { overflow: hidden; width: 100%; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06); }
     .work:hover .art { transform: scale(1.025); }
-    .work:focus-visible { outline: 2px solid var(--ink); outline-offset: 6px; }
     .work-text { display: flex; flex-direction: column; gap: 4px; }
     .work b { font-family: 'Archivo', sans-serif; font-size: 17px; }
     .work small { font-size: 13px; color: var(--muted); }
     .work .price { font-size: 14px; font-weight: 700; color: var(--accent); }
+    .work .sold { font-size: 14px; font-weight: 700; color: var(--muted); }
+
+    /* Sayfa iskeleti (ana sayfa dışı) */
+    .page { padding: 56px 24px 112px; }
+    .crumb { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; margin-bottom: 28px; min-height: 44px; }
+
+    /* Butonlar */
+    .btn { min-height: 52px; padding: 0 28px; border: 1.5px solid var(--ink); background: var(--ink); color: #fff; font: inherit; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn:hover { background: #000; color: #fff; }
+    .btn.secondary { background: transparent; color: var(--ink); }
+    .btn.secondary:hover { background: var(--ink); color: #fff; }
+    .btn.accent { background: var(--accent); border-color: var(--accent); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .link-btn { background: none; border: 0; padding: 8px 0; font: inherit; font-size: 13px; font-weight: 700; color: var(--muted); text-decoration: underline; cursor: pointer; min-height: 44px; }
+
+    /* Eser sayfası */
+    .product { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+    .product .art { aspect-ratio: auto; background: var(--soft); padding: 32px; }
+    .product .art img { position: static; padding: 0; height: auto; max-height: 76vh; }
+    .product-info { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 96px; }
+    .product-info h1 { margin: 0; font-size: clamp(32px, 3.6vw, 46px); line-height: 1.05; }
+    .product-info .meta { margin: 0; color: var(--muted); }
+    .product-info .desc { margin: 0; font-size: 17px; line-height: 1.7; color: #2c2c2c; }
+    .product-info .eyebrow { color: var(--accent); }
+    .buy { border-top: 1px solid var(--line); padding-top: 20px; display: flex; flex-direction: column; gap: 14px; }
+    .buy .big-price { font-family: 'Archivo', sans-serif; font-size: 30px; font-weight: 800; }
+    .buy .note { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .buy .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .status-sold { display: inline-block; align-self: flex-start; padding: 6px 12px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
+    .pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 8px; font-size: 14px; font-weight: 700; }
+    .pager a { min-height: 44px; display: inline-flex; align-items: center; }
+    .related { margin-top: 96px; }
+    .related h2 { font-size: 26px; margin: 0 0 24px; }
+
+    /* Formlar (sipariş, bildirim, iletişim) */
+    .form { display: flex; flex-direction: column; gap: 16px; }
+    .form .row { display: flex; flex-wrap: wrap; gap: 16px; }
+    .form .row label { flex: 1 1 200px; }
+    .form label { display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .04em; }
+    .form input, .form textarea { font: inherit; font-size: 15px; min-height: 48px; padding: 12px 14px; border: 1.5px solid #cfccc5; background: #fff; color: var(--ink); }
+    .form textarea { resize: vertical; }
+    .form input:focus, .form textarea:focus { outline: 2px solid var(--ink); outline-offset: 1px; border-color: var(--ink); }
+    .form fieldset { border: 1.5px solid var(--line); padding: 18px; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+    .form legend { font-family: 'Archivo', sans-serif; font-weight: 700; padding: 0 6px; }
+    .error { margin: 0; color: #b42318; font-weight: 600; }
+    .done { background: var(--soft); border-left: 3px solid var(--accent); padding: 20px; }
+    .done h2 { margin: 0 0 8px; font-size: 24px; }
+    .done p { margin: 0 0 6px; line-height: 1.6; }
+    .demo-note { margin: 0; padding: 12px 14px; background: #fff7e6; border: 1px solid #f0d49a; font-size: 13px; line-height: 1.5; }
+    .notify { border: 1.5px solid var(--line); padding: 20px; }
+    .notify h2 { margin: 0 0 6px; font-size: 20px; }
+    .notify > p { margin: 0 0 14px; color: var(--muted); }
+
+    /* Sepet ve sipariş */
+    .cart-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 48px; align-items: start; }
+    .cart-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+    .cart-item { display: grid; grid-template-columns: 96px 1fr auto; gap: 18px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--line); }
+    .cart-item .art { aspect-ratio: 1; }
+    .cart-item .art img { padding: 6%; }
+    .cart-item b { font-family: 'Archivo', sans-serif; font-size: 17px; }
+    .cart-item small { display: block; color: var(--muted); margin-top: 4px; }
+    .cart-item .price { font-weight: 700; text-align: right; }
+    .summary { background: var(--soft); padding: 24px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 96px; }
+    .summary h2 { margin: 0 0 4px; font-size: 20px; }
+    .summary .line { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
+    .summary .total { border-top: 1px solid #d6d2c9; padding-top: 12px; font-weight: 800; font-size: 18px; }
+    .summary .note { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
 
     /* Sanatçı */
-    #hakkinda { padding: 112px 24px; }
     .two { display: flex; flex-wrap: wrap; gap: 56px; align-items: center; }
-    .portrait { flex: 1 1 340px; min-width: 0; }
-    .bio { flex: 1.2 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 22px; }
+    .portrait { flex: 1 1 380px; min-width: 0; }
+    .portrait img { width: 100%; height: auto; display: block; }
+    .portrait figcaption { margin-top: 10px; font-size: 13px; color: var(--muted); }
+    .bio { flex: 1.1 1 400px; min-width: 0; display: flex; flex-direction: column; gap: 22px; }
     .bio p { margin: 0; font-size: 17px; line-height: 1.7; color: #2c2c2c; }
     .bio .caption { font-size: 13px; color: var(--muted); }
+    .insta { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 700; align-self: flex-start; }
 
     /* İletişim */
-    #iletisim { padding: 96px 24px 112px; background: #161616; color: #f3f2ef; }
-    #iletisim .h2 { color: #fff; }
+    .contact { background: #161616; color: #f3f2ef; }
+    .contact a { color: #fff; }
+    .contact .crumb { color: #fff; }
+    .contact .h2 { color: #fff; }
     .contact-info { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
     .contact-info > p { margin: 0; font-size: 17px; line-height: 1.7; color: #cfccc5; }
     .contact-info ul { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; font-size: 15px; }
     .contact-info li { display: flex; gap: 14px; align-items: flex-start; }
+    .contact .form { flex: 1.2 1 420px; min-width: 0; }
+    .contact .form label { color: #cfccc5; }
+    .contact .form input, .contact .form textarea { background: #222; border-color: #3a3a3a; color: #fff; }
+    .contact .form input:focus, .contact .form textarea:focus { outline-color: #fff; }
+    .contact .btn { background: #fff; color: var(--ink); border-color: #fff; align-self: flex-start; }
     .site-qr { margin-top: 12px; display: flex; align-items: center; gap: 16px; }
     .site-qr .code { background: #fff; padding: 10px; line-height: 0; }
     .site-qr .code img { display: block; width: 132px; height: 132px; image-rendering: pixelated; }
     .site-qr p { margin: 0; font-size: 14px; line-height: 1.6; color: #cfccc5; max-width: 220px; }
-    .contact-info a { color: #fff; }
-    .contact-form { flex: 1.2 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
-    .row { display: flex; flex-wrap: wrap; gap: 18px; }
-    .contact-form label { flex: 1 1 200px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; letter-spacing: .04em; color: #cfccc5; }
-    .contact-form input, .contact-form textarea { font: inherit; min-height: 48px; padding: 12px 14px; background: #222; border: 1px solid #3a3a3a; color: #fff; font-size: 15px; }
-    .contact-form textarea { resize: vertical; }
-    .contact-form input:focus, .contact-form textarea:focus { outline: 2px solid #fff; outline-offset: 1px; }
-    .btn { align-self: flex-start; min-height: 50px; padding: 0 30px; background: #fff; color: var(--ink); border: 0; font: inherit; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; }
 
-    .site-footer { padding: 32px 24px; border-top: 1px solid #e4e2dd; }
+    .site-footer { padding: 32px 24px; border-top: 1px solid var(--line); }
     .site-footer .wide { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; color: var(--muted); }
     .site-footer b { font-family: 'Bodoni Moda', Georgia, serif; font-weight: 500; font-size: 16px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
 
-    /* Eser penceresi (ProductDetail) */
-    .lb { position: fixed; inset: 0; z-index: 50; background: rgba(14,14,14,.92); display: flex; padding: 24px; overflow-y: auto; }
-    .lb-close { position: absolute; top: 16px; right: 16px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: none; border: 0; color: #fff; cursor: pointer; }
-    .lb-close:focus-visible { outline: 2px solid #fff; }
-    .lb-inner { width: 100%; max-width: 1040px; margin: auto; display: flex; flex-wrap: wrap; gap: 40px; align-items: center; }   /* margin:auto → sığarsa ortalar, sığmazsa baştan kaydırılır */
-    .lb-img { flex: 1.4 1 360px; min-width: 0; max-width: 560px; margin: 0 auto; }
-    .lb-img .art { background: transparent; }
-    .lb-img .art img { padding: 0; }
-    .lb-txt { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 14px; color: #f3f2ef; }
-    .lb-txt h3 { margin: 0; font-size: 32px; color: #fff; }
-    .lb-txt p { margin: 0; font-size: 15px; line-height: 1.7; color: #cfccc5; }
-    .lb-txt .eyebrow { color: #bdb9b1; letter-spacing: .28em; }
-
-    /* Orijinal / Baskı satırları */
-    .offers { margin: 10px 0 0; border-top: 1px solid #3a3a3a; }
-    .offer { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 16px; padding: 14px 0; border-bottom: 1px solid #3a3a3a; }
-    .offer dt { font-weight: 700; color: #fff; }
-    .offer-note { display: block; font-weight: 500; font-size: 12px; color: #bdb9b1; }
-    .offer dd { margin: 0; }
-    .offer .price { text-align: right; font-weight: 700; color: #fff; }
-    .offer .status { font-size: 13px; color: #bdb9b1; }
-    .offer .status-available { color: #8fd19e; }
-    .offer .action { justify-self: end; }
-    .btn-outline { min-height: 44px; padding: 0 18px; background: transparent; color: #fff; border: 1px solid #777; font: inherit; font-size: 13px; font-weight: 700; letter-spacing: .04em; cursor: pointer; }
-    .btn-solid { min-height: 44px; padding: 0 18px; background: #fff; color: var(--ink); border: 0; font: inherit; font-size: 13px; font-weight: 700; letter-spacing: .04em; cursor: pointer; }
-    .btn-solid:disabled, .btn-outline:disabled { opacity: .5; cursor: not-allowed; }
-    .lb-nav { display: flex; gap: 10px; margin-top: 10px; }
-
-    /* Sipariş / bildirim formu (eser penceresinde) */
-    .request { margin-top: 6px; padding: 18px; background: #222; border: 1px solid #3a3a3a; display: flex; flex-direction: column; gap: 14px; }
-    .request h4 { margin: 0; font-family: 'Archivo', sans-serif; font-size: 16px; color: #fff; }
-    .request .summary { margin: 0; font-size: 13px; color: #bdb9b1; }
-    .request label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; letter-spacing: .04em; color: #cfccc5; }
-    .request input, .request textarea { font: inherit; min-height: 44px; padding: 10px 12px; background: #161616; border: 1px solid #3a3a3a; color: #fff; font-size: 15px; }
-    .request textarea { resize: vertical; }
-    .request input:focus, .request textarea:focus { outline: 2px solid #fff; outline-offset: 1px; }
-    .request .row { display: flex; flex-wrap: wrap; gap: 14px; }
-    .request .row label { flex: 1 1 180px; }
-    .request .actions { display: flex; flex-wrap: wrap; gap: 10px; }
-    .request .error { margin: 0; font-size: 14px; color: #ffb4a6; }
-    .request .done { margin: 0; font-size: 15px; line-height: 1.6; color: #fff; }
-    .sq-btn { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: none; border: 1px solid #555; color: #fff; cursor: pointer; }
-    .sq-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .slide, .art { transition: none; }
-      html { scroll-behavior: auto; }
+    @media (max-width: 520px) { .site-header nav { gap: 4px 16px; } .site-header .wide { padding: 8px 16px; } }
+    @media (max-width: 860px) {
+      .product, .cart-grid { grid-template-columns: 1fr; gap: 32px; }
+      .product-info, .summary { position: static; }
+      .product .art { padding: 16px; }
+      .buy .actions { grid-template-columns: 1fr; }
+      .cart-item { grid-template-columns: 72px 1fr; }
+      .cart-item .price { grid-column: 2; text-align: left; }
     }
+    @media (prefers-reduced-motion: reduce) { .slide, .art { transition: none; } }
   </style>
 </head>
 <body>
@@ -169,17 +201,17 @@
     const { useState, useEffect, useRef, useCallback } = React;
 
     const CONTACT_EMAIL = "ragipcantok@gmail.com";
-    const SITE_URL = "https://rcantok.github.io/ont-art-gallery/";   // katalog QR'ı bu adresi açar
-    // Hafta 1: sipariş ve stok bildirimleri doğrudan webhook.site'a gider (test adresi, birkaç gün sonra silinir).
+    const INSTAGRAM = { url: "https://www.instagram.com/osmantok/", handle: "@osmantok" };
+    const SITE_URL = "https://rcantok.github.io/ont-art-gallery/";   // site QR'ı bu adresi açar
+    // Hafta 1: sipariş ve bildirimler doğrudan webhook.site'a gider (test adresi, birkaç gün sonra silinir).
     // Hafta 2'de sunucu tarafına taşınacak; bu adrese gizli bir anahtar konmaz.
     const WEBHOOK_URL = "https://webhook.site/1f244550-b4bb-423f-9cb2-b64dab9e1f90";
+    const CART_KEY = "ont-cart";
 
     // ==== ESERLER — tek veri kaynağı ====
-    // Yeni eser eklemek için bu diziye bir nesne eklemek yeterli.
-    // Bilinmeyen bilgi null bırakılır (uydurulmaz); ekranda "yakında" olarak görünür.
-    // Fiyatlar sayı (TL). Durum anahtarları: original "available" | "sold";
-    // print "preparing" | "in_stock" | "sold_out" (basılınca edition ve remaining alanları eklenir).
-    // Webhook (1.6): productId = id, productName = title.
+    // Yeni eser = diziye bir nesne. Bilinmeyen bilgi null bırakılır (uydurulmaz).
+    // Fiyat sayı (TL). original.status: "available" | "sold" — satılan eserde "Benzerini haber ver" formu çıkar.
+    // Webhook: productId = id, productName = title.
     const PRODUCTS = [
       {
         // DOLDURULACAK: ad geçici; yıl; teknik ressamın onayını bekliyor
@@ -193,8 +225,7 @@
         desc: "Sazlıklarla çevrili sakin bir göl, ardında altın sarısı bir tarla ve akşam ışığında morlaşan tepeler.",
         image: { src: "images/ont-001.jpg", thumb: "images/thumbs/ont-001.jpg", alt: "Sazlıklı Göl: Sazlıklarla çevrili sakin bir göl, ardında altın sarısı bir tarla ve akşam ışığında morlaşan tepeler.", width: 1400, height: 1029 },
         source: "ON.TOK/35x50/20200104_141045.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -208,8 +239,7 @@
         desc: "Sarı ile mavinin buluştuğu bir zeminde lacivert fırça darbeleri, damlatılmış sarı ve beyaz çizgiler; hareketli, enerjik bir kompozisyon.",
         image: { src: "images/ont-002.jpg", thumb: "images/thumbs/ont-002.jpg", alt: "Sarı Girdap: Sarı ile mavinin buluştuğu bir zeminde lacivert fırça darbeleri, damlatılmış sarı ve beyaz çizgiler; hareketli, enerjik bir kompozisyon.", width: 963, height: 1400 },
         source: "ON.TOK/50×70/20200104_133124.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -223,8 +253,7 @@
         desc: "Gökyüzü mavisine dönük bir at başı; kalın, serbest fırça darbeleri ve koyu konturlarla güçlü bir portre.",
         image: { src: "images/ont-003.jpg", thumb: "images/thumbs/ont-003.jpg", alt: "Dizginli At: Gökyüzü mavisine dönük bir at başı; kalın, serbest fırça darbeleri ve koyu konturlarla güçlü bir portre.", width: 897, height: 1400 },
         source: "ON.TOK/50×70/20200104_132539.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -238,8 +267,7 @@
         desc: "Gri ve beyaz bir zeminde kıvrılan siyah çizgiler; ortada sarı, pembe ve yeşil lekeler, üzerlerinde beyaz damlatma izleri.",
         image: { src: "images/ont-004.jpg", thumb: "images/thumbs/ont-004.jpg", alt: "Kara Kıvrımlar: Gri ve beyaz bir zeminde kıvrılan siyah çizgiler; ortada sarı, pembe ve yeşil lekeler, üzerlerinde beyaz damlatma izleri.", width: 836, height: 1400 },
         source: "ON.TOK/50×70/20200104_132846.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -253,8 +281,7 @@
         desc: "Sisli bir gölün üzerine uzanan mavi dağ sırtları ve aşağıya inen yeşil yamaçlar.",
         image: { src: "images/ont-005.jpg", thumb: "images/thumbs/ont-005.jpg", alt: "Mavi Burun: Sisli bir gölün üzerine uzanan mavi dağ sırtları ve aşağıya inen yeşil yamaçlar.", width: 1400, height: 1020 },
         source: "ON.TOK/35x50/20200104_141104.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -268,8 +295,7 @@
         desc: "Karla kaplı bir ovada çit boyunca ilerleyen iki küçük figür ve beyaza gömülmüş ağaçlar.",
         image: { src: "images/ont-006.jpg", thumb: "images/thumbs/ont-006.jpg", alt: "Karlı Yolda İki Kişi: Karla kaplı bir ovada çit boyunca ilerleyen iki küçük figür ve beyaza gömülmüş ağaçlar.", width: 1400, height: 987 },
         source: "ON.TOK/35x50/20200104_141128.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -283,8 +309,7 @@
         desc: "Yeşil ve beyaz fırça darbeleriyle akan bir çağlayan; gölgeli orman suya yansıyor.",
         image: { src: "images/ont-007.jpg", thumb: "images/thumbs/ont-007.jpg", alt: "Ormanda Çağlayan: Yeşil ve beyaz fırça darbeleriyle akan bir çağlayan; gölgeli orman suya yansıyor.", width: 1400, height: 977 },
         source: "ON.TOK/35x50/20200104_141200.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -298,8 +323,7 @@
         desc: "Sarı ve yeşil şeritler halinde uzanan tarlalar, ufukta ağaç sırası ve soluk tepeler.",
         image: { src: "images/ont-008.jpg", thumb: "images/thumbs/ont-008.jpg", alt: "Hasat Tarlaları: Sarı ve yeşil şeritler halinde uzanan tarlalar, ufukta ağaç sırası ve soluk tepeler.", width: 1400, height: 1021 },
         source: "ON.TOK/35x50/20200104_141248.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -314,8 +338,7 @@
         desc: "Turkuaz denizden yükselen kayalıklar, uçuşan martılar ve ön planda pembe-sarı kıyı çiçekleri.",
         image: { src: "images/ont-009.jpg", thumb: "images/thumbs/ont-009.jpg", alt: "Kayalıklar ve Martılar: Turkuaz denizden yükselen kayalıklar, uçuşan martılar ve ön planda pembe-sarı kıyı çiçekleri.", width: 1400, height: 1022 },
         source: "ON.TOK/35x50/20200104_141305.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -329,8 +352,7 @@
         desc: "Yemyeşil ağaçların arasında küçük bir kulübe ve ışığı yansıtan sakin bir nehir.",
         image: { src: "images/ont-010.jpg", thumb: "images/thumbs/ont-010.jpg", alt: "Nehir Kıyısında Kulübe: Yemyeşil ağaçların arasında küçük bir kulübe ve ışığı yansıtan sakin bir nehir.", width: 1400, height: 993 },
         source: "ON.TOK/35x50/20200104_141345.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -344,8 +366,7 @@
         desc: "Yeşil tepelerin önünde çiçek açmış pembe ağaçlar ve renkli şeritler halinde uzanan bir vadi.",
         image: { src: "images/ont-011.jpg", thumb: "images/thumbs/ont-011.jpg", alt: "Bahar Vadisi: Yeşil tepelerin önünde çiçek açmış pembe ağaçlar ve renkli şeritler halinde uzanan bir vadi.", width: 1400, height: 994 },
         source: "ON.TOK/35x50/20200104_141444.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -359,8 +380,7 @@
         desc: "Turuncu ve kızıl sonbahar ağaçlarının arasından görünen pembe bir dağ.",
         image: { src: "images/ont-012.jpg", thumb: "images/thumbs/ont-012.jpg", alt: "Pembe Dağ: Turuncu ve kızıl sonbahar ağaçlarının arasından görünen pembe bir dağ.", width: 1400, height: 993 },
         source: "ON.TOK/35x50/20200104_141502.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -374,8 +394,7 @@
         desc: "Mavi-mor dağların eteğinde turuncu yapraklı ağaçlar ve karla örtülü bir zemin.",
         image: { src: "images/ont-013.jpg", thumb: "images/thumbs/ont-013.jpg", alt: "Dağların Eteğinde Güz: Mavi-mor dağların eteğinde turuncu yapraklı ağaçlar ve karla örtülü bir zemin.", width: 1400, height: 988 },
         source: "ON.TOK/35x50/20200104_141518.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -389,8 +408,7 @@
         desc: "Renkli, parçalı bir mekânın önünde uzanan bir figür; kubbe ve geometrik biçimlerle kurulmuş bir kompozisyon.",
         image: { src: "images/ont-014.jpg", thumb: "images/thumbs/ont-014.jpg", alt: "Uzanan Figür: Renkli, parçalı bir mekânın önünde uzanan bir figür; kubbe ve geometrik biçimlerle kurulmuş bir kompozisyon.", width: 1400, height: 971 },
         source: "ON.TOK/35x50/20200104_141534.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -404,8 +422,7 @@
         desc: "Mor dağların altında sarı ve turuncu ağaçlarla dolu bir vadi ve ortasından geçen bir yol.",
         image: { src: "images/ont-015.jpg", thumb: "images/thumbs/ont-015.jpg", alt: "Altın Vadi: Mor dağların altında sarı ve turuncu ağaçlarla dolu bir vadi ve ortasından geçen bir yol.", width: 1400, height: 989 },
         source: "ON.TOK/35x50/20200104_141554.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -419,8 +436,7 @@
         desc: "Dikey yeşil ve sarı fırça darbeleriyle soyutlanmış bir orman içi.",
         image: { src: "images/ont-016.jpg", thumb: "images/thumbs/ont-016.jpg", alt: "Yeşil Orman: Dikey yeşil ve sarı fırça darbeleriyle soyutlanmış bir orman içi.", width: 1400, height: 989 },
         source: "ON.TOK/35x50/20200104_141610.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -434,8 +450,7 @@
         desc: "Açık zeminde dönen yeşil, kırmızı ve turuncu lekelerden oluşan bir çember.",
         image: { src: "images/ont-017.jpg", thumb: "images/thumbs/ont-017.jpg", alt: "Yeşil Çember: Açık zeminde dönen yeşil, kırmızı ve turuncu lekelerden oluşan bir çember.", width: 1400, height: 1041 },
         source: "ON.TOK/35x50/20200104_141632.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -449,8 +464,7 @@
         desc: "Mor ve kızıl lekelerden bir gökyüzü, renkli bir ağaç sırası ve suya düşen yansımaları.",
         image: { src: "images/ont-018.jpg", thumb: "images/thumbs/ont-018.jpg", alt: "Renkli Yansımalar: Mor ve kızıl lekelerden bir gökyüzü, renkli bir ağaç sırası ve suya düşen yansımaları.", width: 1400, height: 871 },
         source: "ON.TOK/35x50/20200104_141858.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -464,8 +478,7 @@
         desc: "Dikey beyaz ve gri akışların üzerinde kırmızı, mavi ve sarı vurgular.",
         image: { src: "images/ont-019.jpg", thumb: "images/thumbs/ont-019.jpg", alt: "Beyaz Akış: Dikey beyaz ve gri akışların üzerinde kırmızı, mavi ve sarı vurgular.", width: 1098, height: 1400 },
         source: "ON.TOK/35x50/20200104_142102.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -479,8 +492,7 @@
         desc: "Beyaz zeminde mor ve lacivert parçalardan oluşan soyut bir buket.",
         image: { src: "images/ont-020.jpg", thumb: "images/thumbs/ont-020.jpg", alt: "Mor Buket: Beyaz zeminde mor ve lacivert parçalardan oluşan soyut bir buket.", width: 961, height: 1400 },
         source: "ON.TOK/35x50/20200104_142139.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -494,8 +506,7 @@
         desc: "Göle uzanan koyu yeşil ağaçlar, pembe ve sarı bir gün batımı ve suya düşen yansımaları.",
         image: { src: "images/ont-021.jpg", thumb: "images/thumbs/ont-021.jpg", alt: "Gün Batımında Göl: Göle uzanan koyu yeşil ağaçlar, pembe ve sarı bir gün batımı ve suya düşen yansımaları.", width: 911, height: 1400 },
         source: "ON.TOK/35x50/20200104_142401.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -509,8 +520,7 @@
         desc: "Soluk pembe bir gökyüzü altında çiçek açmış ağaçlar ve yanlarında küçük bir figür.",
         image: { src: "images/ont-022.jpg", thumb: "images/thumbs/ont-022.jpg", alt: "Pembe Ağaçlar: Soluk pembe bir gökyüzü altında çiçek açmış ağaçlar ve yanlarında küçük bir figür.", width: 887, height: 1400 },
         source: "ON.TOK/35x50/20200104_142512.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -524,8 +534,7 @@
         desc: "Yeşil ağaçların gölgelediği uzun bir yolda yan yana yürüyen iki kişi.",
         image: { src: "images/ont-023.jpg", thumb: "images/thumbs/ont-023.jpg", alt: "Ağaçlı Yolda Yürüyüş: Yeşil ağaçların gölgelediği uzun bir yolda yan yana yürüyen iki kişi.", width: 913, height: 1400 },
         source: "ON.TOK/35x50/20200104_142531.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -539,8 +548,7 @@
         desc: "Mor ve sarı bantlardan bir gökyüzü ve altında yumuşak tepeler.",
         image: { src: "images/ont-024.jpg", thumb: "images/thumbs/ont-024.jpg", alt: "Mor Akşam: Mor ve sarı bantlardan bir gökyüzü ve altında yumuşak tepeler.", width: 1400, height: 985 },
         source: "ON.TOK/35x50/20200104_142633.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -554,8 +562,7 @@
         desc: "Turuncu ve kızıl bir gün batımının önünde koyu servi ve ağaç siluetleri.",
         image: { src: "images/ont-025.jpg", thumb: "images/thumbs/ont-025.jpg", alt: "Kızıl Ufuk: Turuncu ve kızıl bir gün batımının önünde koyu servi ve ağaç siluetleri.", width: 1400, height: 1026 },
         source: "ON.TOK/35x50/20200104_142724.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -569,8 +576,7 @@
         desc: "Mavi gökyüzü altında yeşil bir dağ yamacı ve önünde pembe-yeşil çayırlar.",
         image: { src: "images/ont-026.jpg", thumb: "images/thumbs/ont-026.jpg", alt: "Yeşil Dağ: Mavi gökyüzü altında yeşil bir dağ yamacı ve önünde pembe-yeşil çayırlar.", width: 1400, height: 957 },
         source: "ON.TOK/35x50/20200104_142822.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -584,8 +590,7 @@
         desc: "Karlı mavi dağlara doğru uzanan pembe bir yol ve kenarında sarı çiçekli bir ağaç.",
         image: { src: "images/ont-027.jpg", thumb: "images/thumbs/ont-027.jpg", alt: "Dağ Yolu: Karlı mavi dağlara doğru uzanan pembe bir yol ve kenarında sarı çiçekli bir ağaç.", width: 974, height: 1400 },
         source: "ON.TOK/35x50/20200104_142848.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -599,8 +604,7 @@
         desc: "Mavi ve beyaz zeminde kırmızı gelincikler ve serbest, dikey fırça darbeleri.",
         image: { src: "images/ont-028.jpg", thumb: "images/thumbs/ont-028.jpg", alt: "Gelincikler: Mavi ve beyaz zeminde kırmızı gelincikler ve serbest, dikey fırça darbeleri.", width: 949, height: 1400 },
         source: "ON.TOK/35x50/20200104_143017.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -614,8 +618,7 @@
         desc: "Turuncu zemin üzerinde beyaz, siyah ve mavi biçimlerin dikey bir kurgusu.",
         image: { src: "images/ont-029.jpg", thumb: "images/thumbs/ont-029.jpg", alt: "Turuncu Zemin: Turuncu zemin üzerinde beyaz, siyah ve mavi biçimlerin dikey bir kurgusu.", width: 962, height: 1400 },
         source: "ON.TOK/35x50/20200104_143059.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -629,8 +632,7 @@
         desc: "Açık mavi gökyüzü altında beyaz, mor ve krem lekelerle soyutlanmış bir yerleşim.",
         image: { src: "images/ont-030.jpg", thumb: "images/thumbs/ont-030.jpg", alt: "Soyut Kasaba: Açık mavi gökyüzü altında beyaz, mor ve krem lekelerle soyutlanmış bir yerleşim.", width: 1400, height: 851 },
         source: "ON.TOK/35x50/20200104_143123.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -644,8 +646,7 @@
         desc: "Gri ve pembe zeminde birbirine dolanan siyah çizgiler ve kırmızı vurgular.",
         image: { src: "images/ont-031.jpg", thumb: "images/thumbs/ont-031.jpg", alt: "Çizgilerin Dansı: Gri ve pembe zeminde birbirine dolanan siyah çizgiler ve kırmızı vurgular.", width: 1400, height: 1021 },
         source: "ON.TOK/35x50/20200104_143247.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -659,8 +660,7 @@
         desc: "Pembe zemin üzerinde lacivert fırça darbeleri, bordo lekeler ve kıvrılan siyah çizgiler.",
         image: { src: "images/ont-032.jpg", thumb: "images/thumbs/ont-032.jpg", alt: "Lacivert Ritim: Pembe zemin üzerinde lacivert fırça darbeleri, bordo lekeler ve kıvrılan siyah çizgiler.", width: 1400, height: 930 },
         source: "ON.TOK/35x50/20200104_143315.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -674,8 +674,7 @@
         desc: "Gri-mavi zeminde turuncu ve kırmızı lekeler, üzerinde hızlı siyah çizgiler.",
         image: { src: "images/ont-033.jpg", thumb: "images/thumbs/ont-033.jpg", alt: "Turuncu Rüzgâr: Gri-mavi zeminde turuncu ve kırmızı lekeler, üzerinde hızlı siyah çizgiler.", width: 1400, height: 1264 },
         source: "ON.TOK/35x50/20200104_143345.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -689,8 +688,7 @@
         desc: "Pembe ve gri zeminde dairesel fırça darbeleri, beyaz ve turuncu lekeler.",
         image: { src: "images/ont-034.jpg", thumb: "images/thumbs/ont-034.jpg", alt: "Pembe Fırtına: Pembe ve gri zeminde dairesel fırça darbeleri, beyaz ve turuncu lekeler.", width: 1249, height: 1400 },
         source: "ON.TOK/35x50/20200104_143405.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -704,8 +702,7 @@
         desc: "Mor ve gri zeminde kıvrılan sarı ve yeşil fırça darbeleri.",
         image: { src: "images/ont-035.jpg", thumb: "images/thumbs/ont-035.jpg", alt: "Sarı Kıvrım: Mor ve gri zeminde kıvrılan sarı ve yeşil fırça darbeleri.", width: 928, height: 1400 },
         source: "ON.TOK/35x50/20200104_143433.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -719,8 +716,7 @@
         desc: "Koyu zemin üzerinde turuncu ve kızıl geniş fırça darbeleri, aralarında mavi dikey bir şerit.",
         image: { src: "images/ont-036.jpg", thumb: "images/thumbs/ont-036.jpg", alt: "Kızıl Düşüş: Koyu zemin üzerinde turuncu ve kızıl geniş fırça darbeleri, aralarında mavi dikey bir şerit.", width: 1400, height: 1219 },
         source: "ON.TOK/35x50/20200104_143606.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -734,8 +730,7 @@
         desc: "Koyu yeşil ve beyaz dokuların altında açık mor geniş bir alan ve sarı noktalar.",
         image: { src: "images/ont-037.jpg", thumb: "images/thumbs/ont-037.jpg", alt: "Gece Bahçesi: Koyu yeşil ve beyaz dokuların altında açık mor geniş bir alan ve sarı noktalar.", width: 1025, height: 1400 },
         source: "ON.TOK/35x50/20200104_143635.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -749,8 +744,7 @@
         desc: "Bej ve gri zeminde siyah kavisli çizgiler, turuncu ve kırmızı küçük vurgular.",
         image: { src: "images/ont-038.jpg", thumb: "images/thumbs/ont-038.jpg", alt: "Bej Akış: Bej ve gri zeminde siyah kavisli çizgiler, turuncu ve kırmızı küçük vurgular.", width: 1400, height: 1027 },
         source: "ON.TOK/35x50/20200104_143704.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -764,8 +758,7 @@
         desc: "Karla örtülü bir ovada kıvrılan koyu bir dere ve ufukta yaprakları dökülmüş ağaçlar.",
         image: { src: "images/ont-039.jpg", thumb: "images/thumbs/ont-039.jpg", alt: "Kış Deresi: Karla örtülü bir ovada kıvrılan koyu bir dere ve ufukta yaprakları dökülmüş ağaçlar.", width: 1144, height: 1400 },
         source: "ON.TOK/35x50/20200104_143917.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -779,8 +772,7 @@
         desc: "Yeşil ağaçların arasında suya uzanan bir iskele ve beyaz bir ev.",
         image: { src: "images/ont-040.jpg", thumb: "images/thumbs/ont-040.jpg", alt: "İskele Evi: Yeşil ağaçların arasında suya uzanan bir iskele ve beyaz bir ev.", width: 1155, height: 1400 },
         source: "ON.TOK/35x50/20200104_144000.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -794,8 +786,7 @@
         desc: "Bulutlu gri bir gökyüzü altında sakin bir kıyı ve suya düşen sarı ışık.",
         image: { src: "images/ont-041.jpg", thumb: "images/thumbs/ont-041.jpg", alt: "Gri Kıyı: Bulutlu gri bir gökyüzü altında sakin bir kıyı ve suya düşen sarı ışık.", width: 971, height: 1400 },
         source: "ON.TOK/35x50/20200104_144037.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -809,8 +800,7 @@
         desc: "Lila bir gökyüzü altında altın sarısı gün batımı, koyu ağaç sırası ve suya düşen yansıması.",
         image: { src: "images/ont-042.jpg", thumb: "images/thumbs/ont-042.jpg", alt: "Altın Saat: Lila bir gökyüzü altında altın sarısı gün batımı, koyu ağaç sırası ve suya düşen yansıması.", width: 927, height: 1400 },
         source: "ON.TOK/35x50/20200104_144254.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -824,8 +814,7 @@
         desc: "Sarı ışık altında yaprakları dökülen ağaçlar ve lila tonlarında durgun bir göl.",
         image: { src: "images/ont-043.jpg", thumb: "images/thumbs/ont-043.jpg", alt: "Lila Göl: Sarı ışık altında yaprakları dökülen ağaçlar ve lila tonlarında durgun bir göl.", width: 921, height: 1400 },
         source: "ON.TOK/35x50/20200104_144315.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -839,8 +828,7 @@
         desc: "Karlı bir ormanda küçük bir köprü ve altından akan ince bir dere.",
         image: { src: "images/ont-044.jpg", thumb: "images/thumbs/ont-044.jpg", alt: "Karda Köprü: Karlı bir ormanda küçük bir köprü ve altından akan ince bir dere.", width: 929, height: 1400 },
         source: "ON.TOK/35x50/20200104_144355.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -854,8 +842,7 @@
         desc: "Turuncu ve kızıl ağaçların arasında uzak bir köprü ve suya düşen sonbahar yansımaları.",
         image: { src: "images/ont-045.jpg", thumb: "images/thumbs/ont-045.jpg", alt: "Sonbahar Köprüsü: Turuncu ve kızıl ağaçların arasında uzak bir köprü ve suya düşen sonbahar yansımaları.", width: 895, height: 1400 },
         source: "ON.TOK/35x50/20200104_144834.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -870,8 +857,7 @@
         desc: "Altın sarısı ve turuncu ağaçlarla çevrili mavi bir göl ve üzerinde küçük bir kayık.",
         image: { src: "images/ont-046.jpg", thumb: "images/thumbs/ont-046.jpg", alt: "Güz Gölü: Altın sarısı ve turuncu ağaçlarla çevrili mavi bir göl ve üzerinde küçük bir kayık.", width: 941, height: 1400 },
         source: "ON.TOK/35x50/20200104_144936.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -885,8 +871,7 @@
         desc: "Sarı ve turuncu ağaçların arasından dökülen beyaz bir çağlayan.",
         image: { src: "images/ont-047.jpg", thumb: "images/thumbs/ont-047.jpg", alt: "Sonbaharda Çağlayan: Sarı ve turuncu ağaçların arasından dökülen beyaz bir çağlayan.", width: 1400, height: 1021 },
         source: "ON.TOK/35x50/20200104_145033.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -900,8 +885,7 @@
         desc: "Sakin bir denizin kıyısında kayalar, kumsala çekilmiş bir kayık ve uçan martılar.",
         image: { src: "images/ont-048.jpg", thumb: "images/thumbs/ont-048.jpg", alt: "Kıyıda Balıkçı: Sakin bir denizin kıyısında kayalar, kumsala çekilmiş bir kayık ve uçan martılar.", width: 1400, height: 1020 },
         source: "ON.TOK/35x50/20200104_145127.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -915,8 +899,7 @@
         desc: "Mavi bir koyun kenarında sarı ve pembe yapraklı bir ağaç kümesi.",
         image: { src: "images/ont-049.jpg", thumb: "images/thumbs/ont-049.jpg", alt: "Kıyıdaki Ağaçlar: Mavi bir koyun kenarında sarı ve pembe yapraklı bir ağaç kümesi.", width: 1400, height: 1014 },
         source: "ON.TOK/35x50/20200104_145158.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -930,8 +913,7 @@
         desc: "Mavi göl ve dağların önünde beyaz evler, ön planda sarı ve kızıl sazlar.",
         image: { src: "images/ont-050.jpg", thumb: "images/thumbs/ont-050.jpg", alt: "Göl Kenarında Evler: Mavi göl ve dağların önünde beyaz evler, ön planda sarı ve kızıl sazlar.", width: 983, height: 1400 },
         source: "ON.TOK/35x50/20200104_145221.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -945,8 +927,7 @@
         desc: "Sarı ve krem tonlarında dalgalanan tepeler, kıvrılan bir yol ve koyu ağaç kümeleri.",
         image: { src: "images/ont-051.jpg", thumb: "images/thumbs/ont-051.jpg", alt: "Sarı Tepeler: Sarı ve krem tonlarında dalgalanan tepeler, kıvrılan bir yol ve koyu ağaç kümeleri.", width: 947, height: 1400 },
         source: "ON.TOK/35x50/20200104_145419.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -960,8 +941,7 @@
         desc: "Tepelerin eteğinde turuncu çatılı evler ve kalın fırça darbeleriyle işlenmiş mavi bir liman.",
         image: { src: "images/ont-052.jpg", thumb: "images/thumbs/ont-052.jpg", alt: "Liman Köyü: Tepelerin eteğinde turuncu çatılı evler ve kalın fırça darbeleriyle işlenmiş mavi bir liman.", width: 1026, height: 1400 },
         source: "ON.TOK/35x50/20200104_145753.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -975,8 +955,7 @@
         desc: "Koyu, kabaran bulutların altında pembe bir ev ve altın sarısı bir tarla.",
         image: { src: "images/ont-053.jpg", thumb: "images/thumbs/ont-053.jpg", alt: "Fırtına Öncesi: Koyu, kabaran bulutların altında pembe bir ev ve altın sarısı bir tarla.", width: 997, height: 1400 },
         source: "ON.TOK/35x50/20200104_145825.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -990,8 +969,7 @@
         desc: "Mavi dağın önünde kırmızı çatılı evler, yuvarlak ağaçlar ve ahşap bir çit.",
         image: { src: "images/ont-054.jpg", thumb: "images/thumbs/ont-054.jpg", alt: "Çitli Çiftlik: Mavi dağın önünde kırmızı çatılı evler, yuvarlak ağaçlar ve ahşap bir çit.", width: 962, height: 1400 },
         source: "ON.TOK/35x50/20200104_145839.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1005,8 +983,7 @@
         desc: "Göl kıyısı boyunca kıvrılan bir yol ve suya uzanan sarı-yeşil ağaçlar.",
         image: { src: "images/ont-055.jpg", thumb: "images/thumbs/ont-055.jpg", alt: "Göl Yolu: Göl kıyısı boyunca kıvrılan bir yol ve suya uzanan sarı-yeşil ağaçlar.", width: 972, height: 1400 },
         source: "ON.TOK/35x50/20200104_145854_001.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1020,8 +997,7 @@
         desc: "Geniş mavi bir gökyüzü, sarı bir tarla ve önde koyu mavi çalılıklar.",
         image: { src: "images/ont-056.jpg", thumb: "images/thumbs/ont-056.jpg", alt: "Sarı Tarla: Geniş mavi bir gökyüzü, sarı bir tarla ve önde koyu mavi çalılıklar.", width: 973, height: 1400 },
         source: "ON.TOK/35x50/20200104_145920.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1035,8 +1011,7 @@
         desc: "Turkuaz bir koyda demirlemiş yelkenliler ve uzakta beyaz bir fener.",
         image: { src: "images/ont-057.jpg", thumb: "images/thumbs/ont-057.jpg", alt: "Koydaki Yelkenliler: Turkuaz bir koyda demirlemiş yelkenliler ve uzakta beyaz bir fener.", width: 1400, height: 967 },
         source: "ON.TOK/35x50/20200104_150310.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1050,8 +1025,7 @@
         desc: "Yeşil yamaçlardan inen bir yol ve kıvrımında çiçek açmış pembe bir ağaç.",
         image: { src: "images/ont-058.jpg", thumb: "images/thumbs/ont-058.jpg", alt: "Çiçekli Viraj: Yeşil yamaçlardan inen bir yol ve kıvrımında çiçek açmış pembe bir ağaç.", width: 1224, height: 1400 },
         source: "ON.TOK/35x50/20200104_150333.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1065,8 +1039,7 @@
         desc: "Mor çiçekli büyük bir ağacın altından geçen yol ve yeşil tarlalar.",
         image: { src: "images/ont-059.jpg", thumb: "images/thumbs/ont-059.jpg", alt: "Erguvan Yolu: Mor çiçekli büyük bir ağacın altından geçen yol ve yeşil tarlalar.", width: 962, height: 1400 },
         source: "ON.TOK/35x50/20200104_150358.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1080,8 +1053,7 @@
         desc: "Pembe ve kahverengi tepeler arasından akan turkuaz bir dere ve küçük kırmızı ağaçlar.",
         image: { src: "images/ont-060.jpg", thumb: "images/thumbs/ont-060.jpg", alt: "Pembe Vadi: Pembe ve kahverengi tepeler arasından akan turkuaz bir dere ve küçük kırmızı ağaçlar.", width: 981, height: 1400 },
         source: "ON.TOK/35x50/20200104_150428.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1095,8 +1067,7 @@
         desc: "Yüksek çam ağaçlarının arasından kıvrılan lila bir yol ve üzerinde küçük kırmızı bir araba.",
         image: { src: "images/ont-061.jpg", thumb: "images/thumbs/ont-061.jpg", alt: "Orman Yolu: Yüksek çam ağaçlarının arasından kıvrılan lila bir yol ve üzerinde küçük kırmızı bir araba.", width: 968, height: 1400 },
         source: "ON.TOK/35x50/20200104_150445.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1110,8 +1081,7 @@
         desc: "Bulutlu bir gökyüzüne doğru uzanan düz bir yol ve iki yanında çalılıklar.",
         image: { src: "images/ont-062.jpg", thumb: "images/thumbs/ont-062.jpg", alt: "Ufka Giden Yol: Bulutlu bir gökyüzüne doğru uzanan düz bir yol ve iki yanında çalılıklar.", width: 967, height: 1400 },
         source: "ON.TOK/35x50/20200104_150509.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1125,8 +1095,7 @@
         desc: "Açık mavi zeminde siyah ve turuncu damlatma çizgilerden oluşan dikey bir kütle.",
         image: { src: "images/ont-063.jpg", thumb: "images/thumbs/ont-063.jpg", alt: "Kızıl Damlalar: Açık mavi zeminde siyah ve turuncu damlatma çizgilerden oluşan dikey bir kütle.", width: 984, height: 1400 },
         source: "ON.TOK/35x50/20200104_150534.jpg",
-        original: { price: 8000, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 8000, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1141,8 +1110,7 @@
         desc: "Kırmızı bir gökyüzünün altında yelkenli direkleri ve suya düşen beyaz yansımalar.",
         image: { src: "images/ont-064.jpg", thumb: "images/thumbs/ont-064.jpg", alt: "Kızıl Liman: Kırmızı bir gökyüzünün altında yelkenli direkleri ve suya düşen beyaz yansımalar.", width: 986, height: 1400 },
         source: "ON.TOK/50×70/20200104_131542.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1156,8 +1124,7 @@
         desc: "Mor lavantalar, sarı bir tarla ve arkada yeşil ağaçlar ile soluk dağlar.",
         image: { src: "images/ont-065.jpg", thumb: "images/thumbs/ont-065.jpg", alt: "Lavanta Tarlası: Mor lavantalar, sarı bir tarla ve arkada yeşil ağaçlar ile soluk dağlar.", width: 937, height: 1400 },
         source: "ON.TOK/50×70/20200104_132031.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1171,8 +1138,7 @@
         desc: "Karlı bir ormanda koyu mavi bir dere ve üzerinden geçen küçük bir köprü.",
         image: { src: "images/ont-066.jpg", thumb: "images/thumbs/ont-066.jpg", alt: "Kış Ormanında Dere: Karlı bir ormanda koyu mavi bir dere ve üzerinden geçen küçük bir köprü.", width: 905, height: 1400 },
         source: "ON.TOK/50×70/20200104_132427.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1186,8 +1152,7 @@
         desc: "Rıhtım boyunca dizilmiş açık renkli binalar, tekneler ve mavi suya düşen yansımalar.",
         image: { src: "images/ont-067.jpg", thumb: "images/thumbs/ont-067.jpg", alt: "Rıhtım Evleri: Rıhtım boyunca dizilmiş açık renkli binalar, tekneler ve mavi suya düşen yansımalar.", width: 938, height: 1400 },
         source: "ON.TOK/50×70/20200104_132614.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1201,8 +1166,7 @@
         desc: "Beyaz zeminde lacivert, yeşil ve bordo lekelerin etrafında dönen siyah çizgiler.",
         image: { src: "images/ont-068.jpg", thumb: "images/thumbs/ont-068.jpg", alt: "Yeşil Düğüm: Beyaz zeminde lacivert, yeşil ve bordo lekelerin etrafında dönen siyah çizgiler.", width: 934, height: 1400 },
         source: "ON.TOK/50×70/20200104_132634.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1216,8 +1180,7 @@
         desc: "Turuncu ve sarı yapraklı ağaçların arasında kemerli bir köprü ve mavi su.",
         image: { src: "images/ont-069.jpg", thumb: "images/thumbs/ont-069.jpg", alt: "Kemerli Köprü: Turuncu ve sarı yapraklı ağaçların arasında kemerli bir köprü ve mavi su.", width: 941, height: 1400 },
         source: "ON.TOK/50×70/20200104_132750.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1231,8 +1194,7 @@
         desc: "Dikey beyaz ve mavi fırça darbeleriyle uzaklaşan bir sokak ve iki yanında binalar.",
         image: { src: "images/ont-070.jpg", thumb: "images/thumbs/ont-070.jpg", alt: "Beyaz Sokak: Dikey beyaz ve mavi fırça darbeleriyle uzaklaşan bir sokak ve iki yanında binalar.", width: 1400, height: 1003 },
         source: "ON.TOK/50×70/20200104_133234.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1246,8 +1208,7 @@
         desc: "Turkuaz bir gölün iki yanında koyu yeşil ağaçlar ve dikey fırça izleri.",
         image: { src: "images/ont-071.jpg", thumb: "images/thumbs/ont-071.jpg", alt: "Yeşil Göl: Turkuaz bir gölün iki yanında koyu yeşil ağaçlar ve dikey fırça izleri.", width: 1400, height: 1012 },
         source: "ON.TOK/50×70/20200104_133310.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1261,8 +1222,7 @@
         desc: "Karla kaplı yamaçlar, koyu çam ağaçları ve arasından akan mavi bir dere.",
         image: { src: "images/ont-072.jpg", thumb: "images/thumbs/ont-072.jpg", alt: "Karlı Yamaç: Karla kaplı yamaçlar, koyu çam ağaçları ve arasından akan mavi bir dere.", width: 1400, height: 998 },
         source: "ON.TOK/50×70/20200104_133337.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1276,8 +1236,7 @@
         desc: "Mavi bir gökyüzü altında sarı, turuncu ve kırmızı bloklardan oluşan bir şehir silueti.",
         image: { src: "images/ont-073.jpg", thumb: "images/thumbs/ont-073.jpg", alt: "Renkli Şehir: Mavi bir gökyüzü altında sarı, turuncu ve kırmızı bloklardan oluşan bir şehir silueti.", width: 1400, height: 1013 },
         source: "ON.TOK/50×70/20200104_133444.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1291,8 +1250,7 @@
         desc: "Gri ve lila dikey fırça darbeleri arasında sarı izler ve beyaz bir zemin.",
         image: { src: "images/ont-074.jpg", thumb: "images/thumbs/ont-074.jpg", alt: "Kış Sisi: Gri ve lila dikey fırça darbeleri arasında sarı izler ve beyaz bir zemin.", width: 1400, height: 1098 },
         source: "ON.TOK/50×70/20200104_133526.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1306,8 +1264,7 @@
         desc: "Beyaz ve lila tonlarında karlı tepeler ve aralarında koyu ağaçlar.",
         image: { src: "images/ont-075.jpg", thumb: "images/thumbs/ont-075.jpg", alt: "Kar Altında Tepeler: Beyaz ve lila tonlarında karlı tepeler ve aralarında koyu ağaçlar.", width: 1400, height: 1057 },
         source: "ON.TOK/50×70/20200104_133551.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1321,8 +1278,7 @@
         desc: "Turkuaz bir koy, yeşil ve sarı kıyı şeridi ve uzakta kahverengi tepeler.",
         image: { src: "images/ont-076.jpg", thumb: "images/thumbs/ont-076.jpg", alt: "Turkuaz Koy: Turkuaz bir koy, yeşil ve sarı kıyı şeridi ve uzakta kahverengi tepeler.", width: 1400, height: 1047 },
         source: "ON.TOK/50×70/20200104_133624.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1336,8 +1292,7 @@
         desc: "Mor dağların önünde sarı çiçekli bir yamaç ve gri-kahverengi geniş alanlar.",
         image: { src: "images/ont-077.jpg", thumb: "images/thumbs/ont-077.jpg", alt: "Sarı Çiçekli Tepe: Mor dağların önünde sarı çiçekli bir yamaç ve gri-kahverengi geniş alanlar.", width: 1400, height: 1090 },
         source: "ON.TOK/50×70/20200104_133712.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1351,8 +1306,7 @@
         desc: "Yeşil ağaçlarla çevrili, gökyüzünü yansıtan sakin bir nehir.",
         image: { src: "images/ont-078.jpg", thumb: "images/thumbs/ont-078.jpg", alt: "Durgun Nehir: Yeşil ağaçlarla çevrili, gökyüzünü yansıtan sakin bir nehir.", width: 1400, height: 993 },
         source: "ON.TOK/50×70/20200104_133821.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1366,8 +1320,7 @@
         desc: "Yeşil bir burnun önünde yatay fırça darbeleriyle işlenmiş mavi bir deniz.",
         image: { src: "images/ont-079.jpg", thumb: "images/thumbs/ont-079.jpg", alt: "Mavi Körfez: Yeşil bir burnun önünde yatay fırça darbeleriyle işlenmiş mavi bir deniz.", width: 1400, height: 1016 },
         source: "ON.TOK/50×70/20200104_134104.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1381,8 +1334,7 @@
         desc: "Göl kenarında kızıl ve kahverengi yapraklı bir ağaç ve uzakta küçük bir kayık.",
         image: { src: "images/ont-080.jpg", thumb: "images/thumbs/ont-080.jpg", alt: "Kızıl Ağaç: Göl kenarında kızıl ve kahverengi yapraklı bir ağaç ve uzakta küçük bir kayık.", width: 957, height: 1400 },
         source: "ON.TOK/50×70/20200104_134142.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1396,8 +1348,7 @@
         desc: "Geniş yeşil ve mor alanlar, üzerinde beyaz çizikler ve kahverengi küçük biçimler.",
         image: { src: "images/ont-081.jpg", thumb: "images/thumbs/ont-081.jpg", alt: "Yeşil ve Mor: Geniş yeşil ve mor alanlar, üzerinde beyaz çizikler ve kahverengi küçük biçimler.", width: 964, height: 1400 },
         source: "ON.TOK/50×70/20200104_134217.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1411,8 +1362,7 @@
         desc: "Koyu yeşil bir ormanın içinden kıvrılarak akan beyaz bir dere.",
         image: { src: "images/ont-082.jpg", thumb: "images/thumbs/ont-082.jpg", alt: "Orman Deresi: Koyu yeşil bir ormanın içinden kıvrılarak akan beyaz bir dere.", width: 971, height: 1400 },
         source: "ON.TOK/50×70/20200104_134247.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1426,8 +1376,7 @@
         desc: "Ağaçlı bir vadide akan turkuaz bir dere ve kenarındaki patika.",
         image: { src: "images/ont-083.jpg", thumb: "images/thumbs/ont-083.jpg", alt: "Yeşil Vadi: Ağaçlı bir vadide akan turkuaz bir dere ve kenarındaki patika.", width: 1400, height: 1052 },
         source: "ON.TOK/50×70/20200104_134438.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1441,8 +1390,7 @@
         desc: "Mavi bir vazoda beyaz çiçekler, arka planda parçalı mavi ve kahverengi alanlar.",
         image: { src: "images/ont-084.jpg", thumb: "images/thumbs/ont-084.jpg", alt: "Vazoda Beyaz Çiçekler: Mavi bir vazoda beyaz çiçekler, arka planda parçalı mavi ve kahverengi alanlar.", width: 948, height: 1400 },
         source: "ON.TOK/50×70/20200104_134557.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1456,8 +1404,7 @@
         desc: "Lacivert ve turkuaz geniş alanlar, siyah çizgiler ve krem rengi bir köşe.",
         image: { src: "images/ont-085.jpg", thumb: "images/thumbs/ont-085.jpg", alt: "Mavi Fırtına: Lacivert ve turkuaz geniş alanlar, siyah çizgiler ve krem rengi bir köşe.", width: 925, height: 1400 },
         source: "ON.TOK/50×70/20200104_134639.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1471,8 +1418,7 @@
         desc: "Mavi tepelerin önünde sarı ve turuncu bir bitki örtüsü ve gri yamaçlar.",
         image: { src: "images/ont-086.jpg", thumb: "images/thumbs/ont-086.jpg", alt: "Güz Tepeleri: Mavi tepelerin önünde sarı ve turuncu bir bitki örtüsü ve gri yamaçlar.", width: 1400, height: 1161 },
         source: "ON.TOK/50×70/20200104_134751.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1487,8 +1433,7 @@
         desc: "Koyu mavi bir gökyüzü altında yeşil ağaçlar arasından akan parlak mavi bir nehir.",
         image: { src: "images/ont-087.jpg", thumb: "images/thumbs/ont-087.jpg", alt: "Mavi Nehir: Koyu mavi bir gökyüzü altında yeşil ağaçlar arasından akan parlak mavi bir nehir.", width: 1400, height: 1089 },
         source: "ON.TOK/50×70/20200104_134901.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1502,8 +1447,7 @@
         desc: "Sisli mor dağların önünden akan bir nehir ve kıyısındaki ağaçlar.",
         image: { src: "images/ont-088.jpg", thumb: "images/thumbs/ont-088.jpg", alt: "Dağların Arasından Nehir: Sisli mor dağların önünden akan bir nehir ve kıyısındaki ağaçlar.", width: 1400, height: 1089 },
         source: "ON.TOK/50×70/20200104_134927.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1517,8 +1461,7 @@
         desc: "Gri zeminde mavi, turuncu ve beyaz parçalardan oluşan dikey bir kütle.",
         image: { src: "images/ont-089.jpg", thumb: "images/thumbs/ont-089.jpg", alt: "Parçalı Figür: Gri zeminde mavi, turuncu ve beyaz parçalardan oluşan dikey bir kütle.", width: 976, height: 1400 },
         source: "ON.TOK/50×70/20200104_135052.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1532,8 +1475,7 @@
         desc: "Krem zeminde kırmızı, sarı, mavi ve siyah lekelerin oluşturduğu yoğun bir küme.",
         image: { src: "images/ont-090.jpg", thumb: "images/thumbs/ont-090.jpg", alt: "Renk Kümesi: Krem zeminde kırmızı, sarı, mavi ve siyah lekelerin oluşturduğu yoğun bir küme.", width: 905, height: 1400 },
         source: "ON.TOK/50×70/20200104_135114.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1547,8 +1489,7 @@
         desc: "Açık sarı zeminde serbest siyah çizgiler ve ortada mor, sarı ve kırmızı renk blokları.",
         image: { src: "images/ont-091.jpg", thumb: "images/thumbs/ont-091.jpg", alt: "Çizgi ve Renk: Açık sarı zeminde serbest siyah çizgiler ve ortada mor, sarı ve kırmızı renk blokları.", width: 942, height: 1400 },
         source: "ON.TOK/50×70/20200104_135522.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1562,8 +1503,7 @@
         desc: "Mavi bir arka planın önünde, kollarını başına kaldırmış beyaz elbiseli bir kadın.",
         image: { src: "images/ont-092.jpg", thumb: "images/thumbs/ont-092.jpg", alt: "Beyaz Elbiseli Kadın: Mavi bir arka planın önünde, kollarını başına kaldırmış beyaz elbiseli bir kadın.", width: 927, height: 1400 },
         source: "ON.TOK/50×70/20200104_140105.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1578,8 +1518,7 @@
         desc: "Gri ve beyaz fırça darbeleriyle işlenmiş, başı hafifçe eğik beyaz bir at.",
         image: { src: "images/ont-093.jpg", thumb: "images/thumbs/ont-093.jpg", alt: "Beyaz At: Gri ve beyaz fırça darbeleriyle işlenmiş, başı hafifçe eğik beyaz bir at.", width: 926, height: 1400 },
         source: "ON.TOK/50×70/20200104_140249.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1593,8 +1532,7 @@
         desc: "Sarı ve turuncu yapraklı ağaçların arasından ışığa doğru uzanan ıslak bir yol.",
         image: { src: "images/ont-094.jpg", thumb: "images/thumbs/ont-094.jpg", alt: "Sonbahar Yolu: Sarı ve turuncu yapraklı ağaçların arasından ışığa doğru uzanan ıslak bir yol.", width: 1400, height: 1068 },
         source: "ON.TOK/50×70/20200104_140333.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       },
       {
         // DOLDURULACAK: ad geçici; teknik, yıl
@@ -1608,76 +1546,131 @@
         desc: "Açık zeminde bordo, mavi ve siyah fırça darbeleriyle soyutlanmış bir at başı.",
         image: { src: "images/ont-095.jpg", thumb: "images/thumbs/ont-095.jpg", alt: "Soyut At: Açık zeminde bordo, mavi ve siyah fırça darbeleriyle soyutlanmış bir at başı.", width: 941, height: 1400 },
         source: "ON.TOK/50×70/20200104_140626.jpg",
-        original: { price: 12500, status: "available" },
-        print: { price: null, status: "preparing" }
+        original: { price: 12500, status: "available" }
       }
     ];
     // ==========================================
 
     // ---- Veriden ekran metnine yardımcılar ----
-    const STATUS_LABELS = { available: "Satışta", sold: "Satıldı", preparing: "Hazırlanıyor", in_stock: "Stokta", sold_out: "Tükendi" };
-    const formatPrice = price => price == null ? "Yakında" : `${price.toLocaleString("tr-TR")} TL`;
+    const STATUS_LABELS = { available: "Satışta", sold: "Satıldı" };
+    const formatPrice = price => price == null ? "Fiyat için iletişime geçin" : `${price.toLocaleString("tr-TR")} TL`;
     const tagsOf = p => [p.subject, p.technique].filter(Boolean);
     const metaLine = p => p.medium ? [p.medium, p.size].filter(Boolean).join(" · ") : [p.size, "Teknik bilgisi yakında"].filter(Boolean).join(" · ");
+    const byId = id => PRODUCTS.find(p => p.id === id);
+    const isBuyable = p => p && p.original.status === "available" && p.original.price != null;
     const ALL = "Tümü";
     const SUBJECTS = [ALL, ...new Set(PRODUCTS.map(p => p.subject))];
     const SIZES = [ALL, ...new Set(PRODUCTS.map(p => p.size).filter(Boolean))];
     const sizeLabel = size => size === ALL ? ALL : size.replace(" cm", "");
 
-    // Webhook fişi (ont-standartlari skill'indeki sözleşme). Eser bilgisi PRODUCTS'tan, kişi bilgisi formdan gelir.
-    function buildPayload(event, product, item, fields) {
-      const base = {
-        event,
-        name: fields.name.trim(),
-        productId: product.id,
-        productName: product.title,
-        item,
-        email: fields.email.trim(),
-        source: "ont-art-gallery"
+    // ---- Yönlendirme: sayfalar adres çubuğundaki # ile ayrılır (GitHub Pages'te sunucu ayarı gerekmez) ----
+    const parseRoute = () => {
+      const parts = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
+      return { page: parts[0] || "", id: parts[1] || null };
+    };
+    function useRoute() {
+      const [route, setRoute] = useState(parseRoute);
+      useEffect(() => {
+        const onHash = () => { setRoute(parseRoute()); window.scrollTo(0, 0); };
+        window.addEventListener("hashchange", onHash);
+        return () => window.removeEventListener("hashchange", onHash);
+      }, []);
+      return route;
+    }
+    const go = path => { location.hash = path; };
+
+    // ---- Sepet: eser kimlikleri tarayıcıda saklanır (orijinal tek olduğu için her eser en fazla bir kez) ----
+    function useCart() {
+      const [ids, setIds] = useState(() => {
+        try { return (JSON.parse(localStorage.getItem(CART_KEY)) || []).filter(id => isBuyable(byId(id))); } catch (e) { return []; }
+      });
+      useEffect(() => { try { localStorage.setItem(CART_KEY, JSON.stringify(ids)); } catch (e) {} }, [ids]);
+      return {
+        ids,
+        items: ids.map(byId).filter(Boolean),
+        has: id => ids.includes(id),
+        add: id => setIds(cur => cur.includes(id) ? cur : [...cur, id]),
+        remove: id => setIds(cur => cur.filter(x => x !== id)),
+        clear: () => setIds([])
       };
-      if (event !== "order") return base;
-      return { ...base, price: product[item].price, quantity: 1, phone: fields.phone.trim(), address: fields.address.trim() };
     }
 
-    // ---- Header: logo ve menü ----
-    function Header() {
+    // ---- Webhook fişleri (ont-standartlari skill'indeki sözleşme) ----
+    // Kart bilgisi hiçbir zaman fişe girmez: ödeme alanı yalnızca "card-demo".
+    function orderPayload(items, f) {
+      const total = items.reduce((sum, p) => sum + p.original.price, 0);
+      return {
+        event: "order",
+        name: f.name.trim(),
+        productId: items.map(p => p.id).join(","),
+        productName: items.map(p => p.title).join(", "),
+        items: items.map(p => ({ productId: p.id, productName: p.title, price: p.original.price })),
+        quantity: items.length,
+        total,
+        phone: f.phone.trim(),
+        email: f.email.trim(),
+        address: f.address.trim(),
+        payment: "card-demo",
+        source: "ont-art-gallery"
+      };
+    }
+    function notifyPayload(product, f) {
+      return { event: "stock_notify", name: f.name.trim(), productId: product.id, productName: product.title, item: "similar", email: f.email.trim(), source: "ont-art-gallery" };
+    }
+    async function sendWebhook(payload) {
+      const res = await fetch(WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      if (!res.ok) throw new Error("webhook " + res.status);
+    }
+    // form.name formun kendi adıdır; alanlar elements üzerinden okunur
+    const formValues = (form, names) => Object.fromEntries(names.map(n => [n, form.elements.namedItem(n)?.value ?? ""]));
+
+    const Icon = {
+      user: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>,
+      bag: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 7h12l1 14H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>,
+      back: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>,
+      instagram: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/></svg>,
+      arrow: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    };
+
+    // ---- Header: logo, menü, hesap ve sepet ----
+    function Header({ page, cartCount }) {
+      const cur = p => page === p ? "page" : undefined;
       return (
         <header className="site-header">
           <div className="wide">
-            <a className="logo" href="#top" aria-label="Ana sayfa"><b>ONT</b><small>Art Gallery</small></a>
+            <a className="logo" href="#/" aria-label="Ana sayfa"><b>ONT</b><small>Art Gallery</small></a>
             <nav aria-label="Ana menü">
-              <a href="#eserler">Eserler</a>
-              <a href="#hakkinda">Sanatçı</a>
-              <a href="#iletisim">İletişim</a>
+              <a href="#/" aria-current={page === "" || page === "eser" ? "page" : undefined}>Eserler</a>
+              <a href="#/sanatci" aria-current={cur("sanatci")}>Sanatçı</a>
+              <a href="#/iletisim" aria-current={cur("iletisim")}>İletişim</a>
+              <a className="icon-link" href="#/hesap" aria-current={cur("hesap")} aria-label="Hesap">{Icon.user}</a>
+              <a className="icon-link" href="#/sepet" aria-current={cur("sepet")} aria-label={`Sepet, ${cartCount} eser`}>
+                {Icon.bag}{cartCount > 0 && <span className="badge" aria-hidden="true">{cartCount}</span>}
+              </a>
             </nav>
           </div>
         </header>
       );
     }
 
-    // ---- Hero: eserler arasında otomatik geçen slayt (dekoratif, kırpılarak gösterilir) ----
+    // ---- Hero: öne çıkan eserler arasında otomatik geçen slayt (dekoratif, kırpılarak gösterilir) ----
     function Hero({ slides, seconds = 5 }) {
       const [current, setCurrent] = useState(0);
       useEffect(() => {
         const timer = setInterval(() => setCurrent(c => (c + 1) % slides.length), seconds * 1000);
         return () => clearInterval(timer);
-      }, [current, slides.length, seconds]);   // noktaya tıklanınca süre baştan başlar
-
+      }, [current, slides.length, seconds]);
       return (
-        <section id="top" className="hero">
+        <section className="hero">
           {slides.map((src, i) => (
-            <div key={src} className={`slide${i === current ? " on" : ""}`}>
-              <img src={src} alt="" />
-            </div>
+            <div key={src} className={`slide${i === current ? " on" : ""}`}><img src={src} alt="" /></div>
           ))}
           <div className="scrim"></div>
           <div className="hero-copy">
             <span className="eyebrow" style={{ letterSpacing: ".32em", opacity: .92 }}>Osman Nihat Tok</span>
             <h1>ONT Art Gallery</h1>
-            <p>Orijinal eserler · Numaralı baskılar</p>
-            <a className="btn-ghost" href="#eserler">Eserleri keşfet
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </a>
+            <p>Orijinal eserler</p>
+            <a className="btn-ghost" href="#eserler" onClick={e => { e.preventDefault(); document.getElementById("eserler").scrollIntoView({ behavior: "smooth" }); }}>Eserleri keşfet {Icon.arrow}</a>
           </div>
           <div className="dots">
             {slides.map((src, i) => (
@@ -1689,196 +1682,289 @@
     }
 
     // ---- ProductImage: eser görselini paspartu zemininde, kırpmadan gösterir ----
-    function ProductImage({ src, alt, width, height }) {
-      return (
-        <div className="art">
-          <img src={src} alt={alt} width={width} height={height} loading="lazy" />
-        </div>
-      );
+    function ProductImage({ src, alt, width, height, eager }) {
+      return <div className="art"><img src={src} alt={alt} width={width} height={height} loading={eager ? "eager" : "lazy"} /></div>;
     }
 
-    // ---- ProductCard: ızgaradaki eser; tıklanınca detayı açar ----
-    function ProductCard({ product, onOpen }) {
+    // ---- ProductCard: ızgaradaki eser; eser sayfasına bağlantı ----
+    function ProductCard({ product }) {
       return (
-        <button className="work" data-product-id={product.id} aria-label={`${product.title} — detayı aç`} onClick={e => onOpen(product.id, e.currentTarget)}>
-          <div className="imgbox">
-            <ProductImage {...product.image} src={product.image.thumb} />
-          </div>
+        <a className="work" href={`#/eser/${product.id}`} data-product-id={product.id}>
+          <div className="imgbox"><ProductImage {...product.image} src={product.image.thumb} /></div>
           <div className="work-text">
             <b>{product.title}</b>
             <small>{metaLine(product)}</small>
-            <span className="price">{formatPrice(product.original.price)}</span>
+            {product.original.status === "sold"
+              ? <span className="sold">Satıldı</span>
+              : <span className="price">{formatPrice(product.original.price)}</span>}
           </div>
-        </button>
+        </a>
       );
     }
 
-    // ---- ProductList: eser ızgarası (gösterilecek eserleri App filtreler) ----
-    function ProductList({ products, onOpen }) {
+    // ---- ProductList: eser ızgarası ----
+    function ProductList({ products }) {
+      return <div className="works">{products.map(p => <ProductCard key={p.id} product={p} />)}</div>;
+    }
+
+    // ---- HomePage: hero + filtreli katalog ----
+    function HomePage() {
+      const [subject, setSubject] = useState(ALL);
+      const [size, setSize] = useState(ALL);
+      const visible = PRODUCTS.filter(p => (subject === ALL || p.subject === subject) && (size === ALL || p.size === size));
       return (
-        <div className="works">
-          {products.map(p => <ProductCard key={p.id} product={p} onOpen={onOpen} />)}
-        </div>
+        <>
+          <Hero slides={PRODUCTS.filter(p => p.featured).map(p => p.image.src)} />
+          <section id="eserler" className="catalog">
+            <div className="wide">
+              <div className="works-head">
+                <h2 className="h2">Eserler</h2>
+                <div className="filter-groups">
+                  <div className="filters" role="group" aria-label="Konuya göre filtrele">
+                    <span className="label" aria-hidden="true">Konu</span>
+                    {SUBJECTS.map(f => <button key={f} aria-pressed={subject === f} onClick={() => setSubject(f)}>{f}</button>)}
+                  </div>
+                  <div className="filters" role="group" aria-label="Ölçüye göre filtrele">
+                    <span className="label" aria-hidden="true">Ölçü</span>
+                    {SIZES.map(f => <button key={f} aria-pressed={size === f} onClick={() => setSize(f)}>{sizeLabel(f)}</button>)}
+                  </div>
+                </div>
+              </div>
+              <p className="count" role="status">{visible.length} eser</p>
+              {visible.length > 0
+                ? <ProductList products={visible} />
+                : <p className="empty">Bu seçimde eser yok. Başka bir konu ya da ölçü deneyin.</p>}
+            </div>
+          </section>
+        </>
       );
     }
 
-    // ---- RequestForm: sipariş ya da baskı bildirimi formu; fişi WEBHOOK_URL'ye gönderir ----
-    // Hata olursa form ve yazılanlar yerinde kalır; başarıda formun yerine onay metni çıkar.
-    function RequestForm({ product, event, item, onCancel }) {
-      const [status, setStatus] = useState("idle");   // idle | sending | done | error
-      const isOrder = event === "order";
-
+    // ---- NotifySimilar: satılmış eser için "benzerini haber ver" formu (stock_notify) ----
+    function NotifySimilar({ product }) {
+      const [status, setStatus] = useState("idle");
       const onSubmit = async e => {
         e.preventDefault();
-        // form.name formun kendi adıdır; alanlar elements üzerinden okunur
-        const field = n => e.target.elements.namedItem(n)?.value ?? "";
-        const fields = { name: field("name"), email: field("email"), phone: field("phone"), address: field("address") };
         setStatus("sending");
-        try {
-          const res = await fetch(WEBHOOK_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(buildPayload(event, product, item, fields))
-          });
-          setStatus(res.ok ? "done" : "error");
-        } catch (err) {
-          setStatus("error");
-        }
+        try { await sendWebhook(notifyPayload(product, formValues(e.target, ["name", "email"]))); setStatus("done"); }
+        catch (err) { setStatus("error"); }
       };
-
-      if (status === "done") {
-        return (
-          <div className="request" role="status">
-            <p className="done">{isOrder
-              ? "Siparişiniz alındı. Size e-postayla dönüş yapacağız."
-              : "Teşekkürler. Bu eserin baskısı çıktığında size e-postayla haber vereceğiz."}</p>
-          </div>
-        );
-      }
-
-      const label = item === "original" ? "Orijinal" : "Baskı";
+      if (status === "done") return <div className="done" role="status"><p>Teşekkürler. Benzer bir eser geldiğinde size e-postayla haber vereceğiz.</p></div>;
       return (
-        <form className="request" onSubmit={onSubmit} aria-label={isOrder ? "Sipariş formu" : "Baskı bildirimi formu"}>
-          <h4>{isOrder ? "Sipariş" : "Baskı çıkınca haber ver"}</h4>
-          <p className="summary">{product.title} · {label}{isOrder ? ` · ${formatPrice(product[item].price)}` : ""}</p>
+        <form className="notify form" onSubmit={onSubmit} aria-label="Benzerini haber ver formu">
+          <h2>Benzerini haber ver</h2>
+          <p>Bu eser satıldı. Benzer bir eser geldiğinde size haber verelim.</p>
           <div className="row">
-            <label>Ad Soyad<input name="name" autoComplete="name" required autoFocus /></label>
+            <label>Ad Soyad<input name="name" autoComplete="name" required /></label>
             <label>E-posta<input name="email" type="email" autoComplete="email" required /></label>
           </div>
-          {isOrder && (
-            <>
-              <label>Telefon<input name="phone" type="tel" autoComplete="tel" required /></label>
-              <label>Teslimat adresi<textarea name="address" rows="3" autoComplete="street-address" required></textarea></label>
-            </>
-          )}
-          {status === "error" && <p className="error" role="alert">Gönderilemedi. Lütfen tekrar deneyin ya da bize {CONTACT_EMAIL} adresinden yazın.</p>}
-          <div className="actions">
-            <button type="submit" className="btn-solid" disabled={status === "sending"}>{status === "sending" ? "Gönderiliyor…" : isOrder ? "Siparişi Gönder" : "Haber Ver"}</button>
-            <button type="button" className="btn-outline" onClick={onCancel}>Vazgeç</button>
-          </div>
+          {status === "error" && <p className="error" role="alert">Gönderilemedi. Lütfen tekrar deneyin ya da {CONTACT_EMAIL} adresine yazın.</p>}
+          <button className="btn" type="submit" disabled={status === "sending"}>{status === "sending" ? "Gönderiliyor…" : "Haber Ver"}</button>
         </form>
       );
     }
 
-    // ---- ProductDetail: eser penceresi (künye, açıklama, Orijinal ve Baskı satırları, form, önceki/sonraki) ----
-    function ProductDetail({ product, onClose, onPrev, onNext }) {
-      const closeRef = useRef(null);
-      const [request, setRequest] = useState(null);   // { event, item } — açık form
-      useEffect(() => { setRequest(null); }, [product.id]);
-      useEffect(() => {
-        closeRef.current.focus();
-        document.body.style.overflow = "hidden";
-        return () => { document.body.style.overflow = ""; };
-      }, []);
-      useEffect(() => {
-        const onKey = e => {
-          if (e.key === "Escape") return onClose();
-          if (e.target.closest("input, textarea")) return;   // form yazarken ok tuşları imleci taşır, eseri değiştirmez
-          if (e.key === "ArrowLeft") onPrev();
-          if (e.key === "ArrowRight") onNext();
-        };
-        document.addEventListener("keydown", onKey);
-        return () => document.removeEventListener("keydown", onKey);
-      }, [onClose, onPrev, onNext]);
+    // ---- ProductPage: eserin kendi sayfası (görsel, künye, satın alma, diğer eserler) ----
+    function ProductPage({ id, cart }) {
+      const product = byId(id);
+      useEffect(() => { if (product) document.title = `${product.title} — ONT Art Gallery`; }, [product]);
+      if (!product) return <NotFound />;
 
-      const { title, desc, image, original, print } = product;
+      const i = PRODUCTS.indexOf(product);
+      const prev = PRODUCTS[(i - 1 + PRODUCTS.length) % PRODUCTS.length];
+      const next = PRODUCTS[(i + 1) % PRODUCTS.length];
+      const related = PRODUCTS.filter(p => p.subject === product.subject && p.id !== product.id).slice(0, 4);
+      const inCart = cart.has(product.id);
+      const sold = product.original.status === "sold";
+
       return (
-        <div className="lb" role="dialog" aria-modal="true" aria-label={`${title} — eser detayı`} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-          <button ref={closeRef} className="lb-close" aria-label="Kapat" onClick={onClose}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-          </button>
-          <div className="lb-inner">
-            <div className="lb-img">
-              <ProductImage {...image} />
-            </div>
-            <div className="lb-txt">
-              <span className="eyebrow">{tagsOf(product).join(" · ")}</span>
-              <h3>{title}</h3>
-              <p>{metaLine(product)}</p>
-              <p>{desc}</p>
-              <dl className="offers">
-                <div className="offer">
-                  <dt>Orijinal</dt>
-                  <dd className="price">{formatPrice(original.price)}</dd>
-                  <dd className={`status${original.status === "available" ? " status-available" : ""}`}>{STATUS_LABELS[original.status]}</dd>
-                  {original.status === "available" && (
-                    <dd className="action"><button type="button" className="btn-solid" onClick={() => setRequest({ event: "order", item: "original" })}>Sipariş Ver</button></dd>
-                  )}
+        <section className="page">
+          <div className="wide">
+            <a className="crumb" href="#/">{Icon.back} Tüm eserler</a>
+            <div className="product">
+              <ProductImage {...product.image} eager />
+              <div className="product-info">
+                <span className="eyebrow">{tagsOf(product).join(" · ")}</span>
+                <h1>{product.title}</h1>
+                <p className="meta">{metaLine(product)} · Orijinal, tek adet</p>
+                <p className="desc">{product.desc}</p>
+                {sold ? (
+                  <div className="buy">
+                    <span className="status-sold">Satıldı</span>
+                    <NotifySimilar key={product.id} product={product} />
+                  </div>
+                ) : (
+                  <div className="buy">
+                    <div className="big-price">{formatPrice(product.original.price)}</div>
+                    {isBuyable(product) && (
+                      <div className="actions">
+                        <button className="btn accent" onClick={() => { cart.add(product.id); go("/siparis"); }}>Şimdi Al</button>
+                        {inCart
+                          ? <a className="btn secondary" href="#/sepet">Sepette · Sepete git</a>
+                          : <button className="btn secondary" onClick={() => cart.add(product.id)}>Sepete Ekle</button>}
+                      </div>
+                    )}
+                    <p className="note">Türkiye içine sigortalı kargo ile, özel olarak paketlenerek gönderilir. Eser imzalıdır.</p>
+                  </div>
+                )}
+                <div className="pager">
+                  <a href={`#/eser/${prev.id}`}>← {prev.title}</a>
+                  <a href={`#/eser/${next.id}`}>{next.title} →</a>
                 </div>
-                <div className="offer">
-                  <dt>Baskı <span className="offer-note">Numaralı, sınırlı sayıda</span></dt>
-                  <dd className="price">{formatPrice(print.price)}</dd>
-                  <dd className="status">{STATUS_LABELS[print.status]}</dd>
-                  <dd className="action">
-                    {print.status === "in_stock"
-                      ? <button type="button" className="btn-solid" onClick={() => setRequest({ event: "order", item: "print" })}>Sipariş Ver</button>
-                      : <button type="button" className="btn-outline" onClick={() => setRequest({ event: "stock_notify", item: "print" })}>Baskı Çıkınca Haber Ver</button>}
-                  </dd>
-                </div>
-              </dl>
-              {request && (
-                <RequestForm key={`${product.id}-${request.event}-${request.item}`} product={product} event={request.event} item={request.item} onCancel={() => setRequest(null)} />
-              )}
-              <div className="lb-nav">
-                <button className="sq-btn" aria-label="Önceki eser" onClick={onPrev}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
-                <button className="sq-btn" aria-label="Sonraki eser" onClick={onNext}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
               </div>
             </div>
+            {related.length > 0 && (
+              <div className="related">
+                <h2>Diğer {product.subject.toLocaleLowerCase("tr")} eserleri</h2>
+                <ProductList products={related} />
+              </div>
+            )}
           </div>
-        </div>
+        </section>
       );
     }
 
-    // ---- ArtistSection: ressam hakkında (yalnızca bilinen bilgiler) ----
-    function ArtistSection({ image }) {
+    // ---- CartPage: sepetteki eserler ve özet ----
+    function CartPage({ cart }) {
+      const total = cart.items.reduce((s, p) => s + p.original.price, 0);
       return (
-        <section id="hakkinda">
-          <div className="wrap two">
-            <div className="portrait">
-              <ProductImage {...image} alt="Osman Nihat Tok'un soyut bir eseri" />
+        <section className="page">
+          <div className="wrap">
+            <a className="crumb" href="#/">{Icon.back} Alışverişe devam et</a>
+            <h1 className="h2" style={{ marginBottom: 32 }}>Sepet</h1>
+            {cart.items.length === 0 ? (
+              <p className="empty">Sepetiniz boş. <a href="#/" style={{ color: "var(--accent)", fontWeight: 700 }}>Eserlere göz atın</a>.</p>
+            ) : (
+              <div className="cart-grid">
+                <ul className="cart-list">
+                  {cart.items.map(p => (
+                    <li key={p.id} className="cart-item">
+                      <a href={`#/eser/${p.id}`}><ProductImage {...p.image} src={p.image.thumb} /></a>
+                      <div>
+                        <a href={`#/eser/${p.id}`}><b>{p.title}</b></a>
+                        <small>{metaLine(p)} · Orijinal</small>
+                        <button className="link-btn" onClick={() => cart.remove(p.id)} aria-label={`${p.title} eserini sepetten çıkar`}>Kaldır</button>
+                      </div>
+                      <span className="price">{formatPrice(p.original.price)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <aside className="summary" aria-label="Sipariş özeti">
+                  <h2>Özet</h2>
+                  <div className="line"><span>{cart.items.length} eser</span><span>{formatPrice(total)}</span></div>
+                  <div className="line"><span>Kargo</span><span>Onayda bildirilir</span></div>
+                  <div className="line total"><span>Toplam</span><span>{formatPrice(total)}</span></div>
+                  <a className="btn accent" href="#/siparis">Siparişi Tamamla</a>
+                  <p className="note">Türkiye içi sigortalı kargo. Kargo ücreti sipariş onay e-postasında bildirilir.</p>
+                </aside>
+              </div>
+            )}
+          </div>
+        </section>
+      );
+    }
+
+    // ---- CheckoutPage: teslimat bilgileri + demo ödeme; sipariş fişini webhook'a gönderir ----
+    // Kart alanlarının name özniteliği yoktur ve okunmaz: kart bilgisi hiçbir yere gönderilmez.
+    function CheckoutPage({ cart }) {
+      const [status, setStatus] = useState("idle");
+      const [placed, setPlaced] = useState(null);
+      const items = cart.items;
+      const total = items.reduce((s, p) => s + p.original.price, 0);
+
+      const onSubmit = async e => {
+        e.preventDefault();
+        const payload = orderPayload(items, formValues(e.target, ["name", "email", "phone", "address"]));
+        setStatus("sending");
+        try { await sendWebhook(payload); setPlaced(payload); cart.clear(); setStatus("done"); window.scrollTo(0, 0); }
+        catch (err) { setStatus("error"); }
+      };
+
+      if (status === "done") {
+        return (
+          <section className="page"><div className="wrap" style={{ maxWidth: 720 }}>
+            <div className="done" role="status">
+              <h2>Siparişiniz alındı</h2>
+              <p>{placed.productName} · {formatPrice(placed.total)}</p>
+              <p>Sipariş özeti ve kargo bilgisi {placed.email} adresine gönderilecek.</p>
             </div>
-            <div className="bio">
-              <span className="eyebrow" style={{ color: "var(--accent)" }}>Sanatçı</span>
-              <h2 className="h2">Osman Nihat Tok</h2>
-              <p>Orhan Cebrailoğlu'nun öğrencisi olan Osman Nihat Tok, soyut resim ve şiir tutkunu bir ressamdır.</p>
-              <p>Eserlerinde ışığı ve rengi serbest fırça darbeleriyle anlatır; göl ve tepe manzaralarından at portrelerine, enerjik soyut kompozisyonlara uzanan geniş bir yelpazede çalışır.</p>
-              <p className="caption">ONT, ressamın baş harflerinden gelir.</p>
+            <p style={{ marginTop: 24 }}><a className="btn secondary" href="#/">Eserlere dön</a></p>
+          </div></section>
+        );
+      }
+      if (items.length === 0) {
+        return <section className="page"><div className="wrap"><h1 className="h2">Sipariş</h1><p className="empty">Sepetiniz boş. <a href="#/" style={{ color: "var(--accent)", fontWeight: 700 }}>Eserlere göz atın</a>.</p></div></section>;
+      }
+
+      return (
+        <section className="page">
+          <div className="wrap">
+            <a className="crumb" href="#/sepet">{Icon.back} Sepete dön</a>
+            <h1 className="h2" style={{ marginBottom: 32 }}>Sipariş</h1>
+            <div className="cart-grid">
+              <form className="form" onSubmit={onSubmit} aria-label="Sipariş formu">
+                <fieldset>
+                  <legend>Teslimat bilgileri</legend>
+                  <div className="row">
+                    <label>Ad Soyad<input name="name" autoComplete="name" required /></label>
+                    <label>Telefon<input name="phone" type="tel" autoComplete="tel" required /></label>
+                  </div>
+                  <label>E-posta<input name="email" type="email" autoComplete="email" required /></label>
+                  <label>Teslimat adresi<textarea name="address" rows="3" autoComplete="street-address" required></textarea></label>
+                </fieldset>
+                <fieldset>
+                  <legend>Ödeme</legend>
+                  <p className="demo-note"><strong>Demo ödeme.</strong> Kartınızdan para çekilmez ve kart bilgisi hiçbir yere gönderilmez. Gerçek bir kart numarası yazmayın.</p>
+                  <label>Kart üzerindeki ad<input autoComplete="off" placeholder="AD SOYAD" /></label>
+                  <label>Kart numarası<input inputMode="numeric" autoComplete="off" placeholder="0000 0000 0000 0000" /></label>
+                  <div className="row">
+                    <label>Son kullanma<input autoComplete="off" placeholder="AA/YY" /></label>
+                    <label>CVC<input inputMode="numeric" autoComplete="off" placeholder="000" /></label>
+                  </div>
+                </fieldset>
+                {status === "error" && <p className="error" role="alert">Sipariş gönderilemedi. Lütfen tekrar deneyin ya da {CONTACT_EMAIL} adresine yazın.</p>}
+                <button className="btn accent" type="submit" disabled={status === "sending"}>{status === "sending" ? "Gönderiliyor…" : `Siparişi Ver · ${formatPrice(total)}`}</button>
+              </form>
+              <aside className="summary" aria-label="Sipariş özeti">
+                <h2>Özet</h2>
+                {items.map(p => <div key={p.id} className="line"><span>{p.title}</span><span>{formatPrice(p.original.price)}</span></div>)}
+                <div className="line"><span>Kargo</span><span>Onayda bildirilir</span></div>
+                <div className="line total"><span>Toplam</span><span>{formatPrice(total)}</span></div>
+              </aside>
             </div>
           </div>
         </section>
       );
     }
 
-    // ---- SiteQr:galeriyi telefonda açan QR kod (yüklenemezse hiç gösterilmez) ----
+    // ---- ArtistPage: ressam hakkında (yalnızca bilinen bilgiler) ----
+    function ArtistPage() {
+      return (
+        <section className="page">
+          <div className="wrap two">
+            <figure className="portrait" style={{ margin: 0 }}>
+              <img src="images/sanatci.jpg" alt="Osman Nihat Tok, atölyesinde büyük bir soyut tuvalinin yanında" width="1200" height="1077" />
+              <figcaption>Osman Nihat Tok, atölyesinde.</figcaption>
+            </figure>
+            <div className="bio">
+              <span className="eyebrow" style={{ color: "var(--accent)" }}>Sanatçı</span>
+              <h1 className="h2">Osman Nihat Tok</h1>
+              <p>Orhan Cebrailoğlu'nun öğrencisi olan Osman Nihat Tok; resim, şiir ve botanik tutkunu bir ressamdır.</p>
+              <p>Eserlerinde ışığı ve rengi serbest fırça darbeleriyle anlatır; göl ve tepe manzaralarından çiçeklere, at portrelerinden enerjik soyut kompozisyonlara uzanan geniş bir yelpazede çalışır.</p>
+              <p className="caption">ONT, ressamın baş harflerinden gelir.</p>
+              <a className="insta" href={INSTAGRAM.url} target="_blank" rel="noopener">{Icon.instagram} Instagram'da {INSTAGRAM.handle}</a>
+              <a className="btn secondary" href="#/" style={{ alignSelf: "flex-start" }}>Eserleri gör {Icon.arrow}</a>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ---- SiteQr: galeriyi telefonda açan QR kod (üretilemezse hiç gösterilmez) ----
     function SiteQr({ url }) {
       const [src, setSrc] = useState(null);
       useEffect(() => {
-        try {
-          const qr = qrcode(0, "M");
-          qr.addData(url);
-          qr.make();
-          setSrc(qr.createDataURL(4, 0));
-        } catch (e) { setSrc(null); }
+        try { const qr = qrcode(0, "M"); qr.addData(url); qr.make(); setSrc(qr.createDataURL(4, 0)); } catch (e) { setSrc(null); }
       }, [url]);
       if (!src) return null;
       return (
@@ -1889,34 +1975,32 @@
       );
     }
 
-    // ---- ContactSection: e-posta ve mesaj formu (form, e-posta uygulamasını açar) ----
-    function ContactSection() {
+    // ---- ContactPage: e-posta, mesaj formu (e-posta uygulamasını açar), QR ----
+    function ContactPage() {
       const onSubmit = e => {
         e.preventDefault();
-        const f = e.target;
-        const body = `${f.mesaj.value}\n\n${f.ad.value} <${f.eposta.value}>`;
-        location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Web sitesinden mesaj — " + f.ad.value)}&body=${encodeURIComponent(body)}`;
+        const f = formValues(e.target, ["name", "email", "message"]);
+        const body = `${f.message}\n\n${f.name} <${f.email}>`;
+        location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Web sitesinden mesaj — " + f.name)}&body=${encodeURIComponent(body)}`;
       };
       return (
-        <section id="iletisim">
+        <section className="page contact">
           <div className="wrap two" style={{ alignItems: "flex-start" }}>
             <div className="contact-info">
-              <h2 className="h2">İletişim</h2>
+              <h1 className="h2">İletişim</h1>
               <p>Eserler ve satın alma için bize yazın. Tüm eserler Türkiye içine sigortalı kargo ile, özel olarak paketlenerek gönderilir.</p>
               <ul>
-                <li>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
-                  <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-                </li>
+                <li><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></li>
+                <li><a className="insta" href={INSTAGRAM.url} target="_blank" rel="noopener">{Icon.instagram} {INSTAGRAM.handle}</a></li>
               </ul>
               <SiteQr url={SITE_URL} />
             </div>
-            <form className="contact-form" onSubmit={onSubmit}>
+            <form className="form" onSubmit={onSubmit} aria-label="İletişim formu">
               <div className="row">
-                <label>Ad Soyad<input type="text" name="ad" required /></label>
-                <label>E-posta<input type="email" name="eposta" required /></label>
+                <label>Ad Soyad<input name="name" autoComplete="name" required /></label>
+                <label>E-posta<input name="email" type="email" autoComplete="email" required /></label>
               </div>
-              <label>Mesajınız<textarea name="mesaj" rows="5" required></textarea></label>
+              <label>Mesajınız<textarea name="message" rows="6" required></textarea></label>
               <button className="btn" type="submit">Gönder</button>
             </form>
           </div>
@@ -1924,78 +2008,58 @@
       );
     }
 
-    // ---- App: filtreyi ve açık eseri tutar; görünen listeyi PRODUCTS'tan türetir ----
+    // ---- AccountPage: hesap oluşturma — şimdilik yalnızca arayüz ----
+    function AccountPage() {
+      return (
+        <section className="page">
+          <div className="wrap" style={{ maxWidth: 560 }}>
+            <h1 className="h2" style={{ marginBottom: 16 }}>Hesap oluştur</h1>
+            <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>Üyelik yakında açılıyor. Şimdilik siparişlerinizi hesap oluşturmadan verebilirsiniz.</p>
+            <div className="form" style={{ marginTop: 24 }}>
+              <label>Ad Soyad<input disabled /></label>
+              <label>E-posta<input type="email" disabled /></label>
+              <label>Şifre<input type="password" disabled /></label>
+              <button className="btn" disabled>Hesap Oluştur · Yakında</button>
+            </div>
+            <p style={{ marginTop: 24 }}><a href="#/" style={{ fontWeight: 700, color: "var(--accent)" }}>Eserlere göz at →</a></p>
+          </div>
+        </section>
+      );
+    }
+
+    function NotFound() {
+      return <section className="page"><div className="wrap"><h1 className="h2">Sayfa bulunamadı</h1><p className="empty"><a href="#/" style={{ color: "var(--accent)", fontWeight: 700 }}>Eserlere dön</a></p></div></section>;
+    }
+
+    // ---- App: yönlendirme ve sepet ----
     function App() {
-      const [subject, setSubject] = useState(ALL);
-      const [size, setSize] = useState(ALL);
-      const [selectedId, setSelectedId] = useState(null);
-      const lastFocus = useRef(null);
+      const { page, id } = useRoute();
+      const cart = useCart();
+      useEffect(() => {
+        document.body.classList.toggle("is-home", page === "");
+        if (page !== "eser") document.title = "ONT Art Gallery — Osman Nihat Tok";
+      }, [page]);
 
-      const visible = PRODUCTS.filter(p => (subject === ALL || p.subject === subject) && (size === ALL || p.size === size));
-      const index = visible.findIndex(p => p.id === selectedId);
-      const selected = index >= 0 ? visible[index] : null;
-
-      const openDetail = (id, trigger) => { lastFocus.current = trigger; setSelectedId(id); };
-      const closeDetail = useCallback(() => {
-        setSelectedId(null);
-        if (lastFocus.current) lastFocus.current.focus();
-      }, []);
-      const step = useCallback(delta => {
-        setSelectedId(id => {
-          const i = visible.findIndex(p => p.id === id);
-          return visible[(i + delta + visible.length) % visible.length].id;
-        });
-      }, [visible]);
-      const showPrev = useCallback(() => step(-1), [step]);
-      const showNext = useCallback(() => step(1), [step]);
+      let view;
+      if (page === "") view = <HomePage />;
+      else if (page === "eser") view = <ProductPage id={id} cart={cart} />;
+      else if (page === "sanatci") view = <ArtistPage />;
+      else if (page === "iletisim") view = <ContactPage />;
+      else if (page === "sepet") view = <CartPage cart={cart} />;
+      else if (page === "siparis") view = <CheckoutPage cart={cart} />;
+      else if (page === "hesap") view = <AccountPage />;
+      else view = <NotFound />;
 
       return (
         <>
-          <Header />
-          <Hero slides={PRODUCTS.filter(p => p.featured).map(p => p.image.src)} />
-
-          <main>
-            <section id="eserler">
-              <div className="wide">
-                <div className="works-head">
-                  <div>
-                    <h2 className="h2">Eserler</h2>
-                    <p>Her eserin tek bir orijinali vardır. Detay ve satın alma için bir esere dokunun.</p>
-                  </div>
-                  <div className="filter-groups">
-                    <div className="filters" role="group" aria-label="Konuya göre filtrele">
-                      <span className="label" aria-hidden="true">Konu</span>
-                      {SUBJECTS.map(f => (
-                        <button key={f} aria-pressed={subject === f} onClick={() => setSubject(f)}>{f}</button>
-                      ))}
-                    </div>
-                    <div className="filters" role="group" aria-label="Ölçüye göre filtrele">
-                      <span className="label" aria-hidden="true">Ölçü</span>
-                      {SIZES.map(f => (
-                        <button key={f} aria-pressed={size === f} onClick={() => setSize(f)}>{sizeLabel(f)}</button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <p className="count" role="status">{visible.length} eser</p>
-                {visible.length > 0
-                  ? <ProductList products={visible} onOpen={openDetail} />
-                  : <p className="empty">Bu seçimde eser yok. Başka bir konu ya da ölçü deneyin.</p>}
-              </div>
-            </section>
-
-            <ArtistSection image={PRODUCTS.find(p => p.id === "ont-002").image} />
-            <ContactSection />
-          </main>
-
+          <Header page={page} cartCount={cart.ids.length} />
+          <main>{view}</main>
           <footer className="site-footer">
             <div className="wide">
               <b>ONT Art Gallery</b>
               <span>© {new Date().getFullYear()} Osman Nihat Tok. Tüm eserlerin hakları saklıdır.</span>
             </div>
           </footer>
-
-          {selected && <ProductDetail product={selected} onClose={closeDetail} onPrev={showPrev} onNext={showNext} />}
         </>
       );
     }
