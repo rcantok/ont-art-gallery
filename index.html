@@ -88,6 +88,10 @@
     .contact-info > p { margin: 0; font-size: 17px; line-height: 1.7; color: #cfccc5; }
     .contact-info ul { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; font-size: 15px; }
     .contact-info li { display: flex; gap: 14px; align-items: flex-start; }
+    .site-qr { margin-top: 12px; display: flex; align-items: center; gap: 16px; }
+    .site-qr .code { background: #fff; padding: 10px; line-height: 0; }
+    .site-qr .code img { display: block; width: 132px; height: 132px; image-rendering: pixelated; }
+    .site-qr p { margin: 0; font-size: 14px; line-height: 1.6; color: #cfccc5; max-width: 220px; }
     .contact-info a { color: #fff; }
     .contact-form { flex: 1.2 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
     .row { display: flex; flex-wrap: wrap; gap: 18px; }
@@ -158,11 +162,14 @@
   <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"></script>
+  <!-- QR kod üretici (CDN, kurulumsuz) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
   <script type="text/babel" data-presets="react">
     const { useState, useEffect, useRef, useCallback } = React;
 
     const CONTACT_EMAIL = "ragipcantok@gmail.com";
+    const SITE_URL = "https://rcantok.github.io/ont-art-gallery/";   // katalog QR'ı bu adresi açar
     // Hafta 1: sipariş ve stok bildirimleri doğrudan webhook.site'a gider (test adresi, birkaç gün sonra silinir).
     // Hafta 2'de sunucu tarafına taşınacak; bu adrese gizli bir anahtar konmaz.
     const WEBHOOK_URL = "https://webhook.site/1f244550-b4bb-423f-9cb2-b64dab9e1f90";
@@ -1862,6 +1869,26 @@
       );
     }
 
+    // ---- SiteQr:galeriyi telefonda açan QR kod (yüklenemezse hiç gösterilmez) ----
+    function SiteQr({ url }) {
+      const [src, setSrc] = useState(null);
+      useEffect(() => {
+        try {
+          const qr = qrcode(0, "M");
+          qr.addData(url);
+          qr.make();
+          setSrc(qr.createDataURL(4, 0));
+        } catch (e) { setSrc(null); }
+      }, [url]);
+      if (!src) return null;
+      return (
+        <div className="site-qr">
+          <div className="code"><img src={src} alt={`Galerinin adresi için QR kod: ${url}`} width="132" height="132" /></div>
+          <p>Galeriyi telefonunuzda açmak için kameranızla okutun.</p>
+        </div>
+      );
+    }
+
     // ---- ContactSection: e-posta ve mesaj formu (form, e-posta uygulamasını açar) ----
     function ContactSection() {
       const onSubmit = e => {
@@ -1882,6 +1909,7 @@
                   <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
                 </li>
               </ul>
+              <SiteQr url={SITE_URL} />
             </div>
             <form className="contact-form" onSubmit={onSubmit}>
               <div className="row">
