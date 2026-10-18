@@ -11,7 +11,7 @@ export async function POST(request) {
   if (!body) return json(400, { error: "İstek okunamadı." });
 
   const f = pickFields(body, ["name", "email"]);
-  const errors = validateFields(f);
+  const errors = validateFields({ ...f, consent: body.consent });
   if (Object.keys(errors).length) return json(400, { error: "Formda düzeltilmesi gereken alanlar var.", errors });
 
   const product = PRODUCTS.find(p => p.id === body.productId);
@@ -24,6 +24,8 @@ export async function POST(request) {
     productName: product.title,
     item: "similar",
     email: f.email.trim(),
+    consent: true,
+    consentAt: new Date().toISOString(),
     source: "ont-art-gallery"
   };
 

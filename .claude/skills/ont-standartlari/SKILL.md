@@ -36,7 +36,7 @@ Headless Chrome ile ekran görüntüsü al ve konsolu oku (Babel uyarısı dış
 
 ## Webhook formatı
 
-Site çok sayfalı bir mağazadır (hash yönlendirme: `#/`, `#/eser/<id>`, `#/sanatci`, `#/iletisim`, `#/sepet`, `#/siparis`, `#/hesap`). Tarayıcı form alanlarını ve eser kimliklerini sitenin kendi API'sine yollar (`postForm` → `/api/order`, `/api/notify`). Sunucu alanları `lib/validate.js` ile yeniden doğrular, fişi `PRODUCTS`'tan kurar ve `WEBHOOK_URL`'ye tek bir JSON nesnesi olarak iletir (`forwardToWebhook`, `X-ONT-Secret` başlığıyla). Baskı satışı yoktur; her eser tek orijinaldir.
+Site çok sayfalı bir mağazadır (hash yönlendirme: `#/`, `#/eser/<id>`, `#/sanatci`, `#/iletisim`, `#/sepet`, `#/siparis`, `#/hesap`, `#/gizlilik`). Tarayıcı form alanlarını ve eser kimliklerini sitenin kendi API'sine yollar (`postForm` → `/api/order`, `/api/notify`). Sunucu alanları `lib/validate.js` ile yeniden doğrular, fişi `PRODUCTS`'tan kurar ve `WEBHOOK_URL`'ye tek bir JSON nesnesi olarak iletir (`forwardToWebhook`, `X-ONT-Secret` başlığıyla). Baskı satışı yoktur; her eser tek orijinaldir.
 
 ### Sipariş — `event: "order"` (Sipariş sayfası, sepetin tamamı)
 
@@ -83,7 +83,9 @@ Site çok sayfalı bir mağazadır (hash yönlendirme: `#/`, `#/eser/<id>`, `#/s
 | `quantity` | Eser sayısı (her orijinal tek adet; sepete bir eser en fazla bir kez girer) |
 | `total` | `items` fiyatlarının toplamı, sayı. Kargo dahil değil (onayda bildirilir) |
 | `name`, `email`, `phone`, `address` | Formdan, zorunlu, baş/son boşluk kırpılır. `phone` ve `address` yalnızca siparişte |
-| `payment` | Sabit `"card-demo"` |
+| `payment` | Sabit `"card-demo"` (yalnızca siparişte) |
+| `consent` | KVKK açık rıza; her iki olayda sabit `true` (sunucu, formdaki rıza kutusu işaretli değilse isteği reddeder) |
+| `consentAt` | Rızanın alındığı an, ISO 8601; sunucu ekler |
 | `item` | Yalnızca `stock_notify`'da, sabit `"similar"` |
 | `source` | Sabit `"ont-art-gallery"` |
 

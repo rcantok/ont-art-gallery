@@ -34,7 +34,7 @@ const post = (handler, body, ip = newIp()) => handler(new Request("http://localh
   body: typeof body === "string" ? body : JSON.stringify(body)
 }));
 
-const validOrder = { name: "Ali Veli", phone: "0532 123 45 67", email: "ali@gmail.com", address: "Moda Cd. 1, Kadıköy", items: ["ont-092"] };
+const validOrder = { name: "Ali Veli", phone: "0532 123 45 67", email: "ali@gmail.com", address: "Moda Cd. 1, Kadıköy", consent: true, items: ["ont-092"] };
 
 test("geçerli sipariş: fiyat ve toplam sunucuda katalogdan hesaplanır, gizli anahtar başlıkta gider", async () => {
   received.length = 0;
@@ -97,7 +97,7 @@ test("istek sınırı: aynı IP'den dakikada 10 istek geçer, 11. istek 429 alı
 test("istek sınırı uç başına sayılır: sipariş ucu dolunca bildirim ucu açık kalır", async () => {
   const ip = newIp();
   for (let i = 0; i < 11; i++) await post(order, {}, ip);
-  assert.equal((await post(notify, { name: "Ece", email: "ece@ornek.com", productId: "ont-001" }, ip)).status, 400);
+  assert.equal((await post(notify, { name: "Ece", email: "ece@ornek.com", consent: true, productId: "ont-001" }, ip)).status, 400);
 });
 
 test("webhook hata verirse → 502", async () => {
@@ -118,13 +118,13 @@ test("WEBHOOK_URL tanımlı değilse → 502, adres yanıtta görünmez", async 
 
 test("bildirim: satıştaki eser için istenemez (yalnızca satılmış eser)", async () => {
   received.length = 0;
-  const res = await post(notify, { name: "Ece Deneme", email: "ece@ornek.com", productId: "ont-001" });
+  const res = await post(notify, { name: "Ece Deneme", email: "ece@ornek.com", consent: true, productId: "ont-001" });
   assert.equal(res.status, 400);
   assert.equal(received.length, 0);
 });
 
 test("bildirim: hatalı e-posta → 400", async () => {
-  const res = await post(notify, { name: "Ece Deneme", email: "ece@ornek", productId: "ont-001" });
+  const res = await post(notify, { name: "Ece Deneme", email: "ece@ornek", consent: true, productId: "ont-001" });
   assert.equal(res.status, 400);
   assert.ok((await res.json()).errors.email);
 });
@@ -136,8 +136,45 @@ test("bildirim: satılmış eser için geçerli istek → 200, fiş sözleşmeye
   p.original.status = "sold"; // şu an satılmış eser yok; test süresince biri satılmış sayılır
   received.length = 0;
   try {
-    const res = await post(notify, { name: " Ece Deneme ", email: "ece@ornek.com", productId: "ont-095" });
+    const res = await post(notify, { name: " Ece Deneme ", email: "ece@ornek.com", consent: true, productId: "ont-095" });
     assert.equal(res.status, 200);
-    assert.deepEqual(received[0].body, { event: "stock_notify", name: "Ece Deneme", productId: "ont-095", productName: "Soyut At", item: "similar", email: "ece@ornek.com", source: "ont-art-gallery" });
+    const nb = received[0].body;
+    assert.equal(nb.consent, true); assert.ok(nb.consentAt);
+    delete nb.consent; delete nb.consentAt;
+    assert.deepEqual(nb, { event: "stock_notify", name: "Ece Deneme", productId: "ont-095", productName: "Soyut At", item: "similar", email: "ece@ornek.com", source: "ont-art-gallery" });
   } finally { p.original.status = saved; }
+});
+
+test("rıza yok: consent eksik → 400, webhook'a gitmez", async () => {
+  received.length = 0;
+  const { consent, ...noConsent } = validOrder;
+  const res = await post(order, noConsent);
+  assert.equal(res.status, 400);
+  assert.ok((await res.json()).errors.consent);
+  assert.equal(received.length, 0);
+});
+
+test("rıza false → 400", async () => {
+  const res = await post(order, { ...validOrder, consent: false });
+  assert.equal(res.status, 400);
+  assert.ok((await res.json()).errors.consent);
+});
+
+test("rıza string 'true' sayılmaz → 400 (yalnızca gerçek boolean)", async () => {
+  const res = await post(order, { ...validOrder, consent: "true" });
+  assert.equal(res.status, 400);
+});
+
+test("geçerli siparişte fişe consent ve consentAt eklenir", async () => {
+  received.length = 0;
+  const res = await post(order, validOrder);
+  assert.equal(res.status, 200);
+  assert.equal(received[0].body.consent, true);
+  assert.match(received[0].body.consentAt, /^\d{4}-\d{2}-\d{2}T/);
+});
+
+test("bildirimde rıza yoksa → 400", async () => {
+  const res = await post(notify, { name: "Ece", email: "ece@ornek.com", productId: "ont-001" });
+  assert.equal(res.status, 400);
+  assert.ok((await res.json()).errors.consent);
 });

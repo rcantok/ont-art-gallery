@@ -15,7 +15,7 @@ export async function POST(request) {
   if (!body) return json(400, { error: "İstek okunamadı." });
 
   const f = pickFields(body, ["name", "phone", "email", "address"]);
-  const errors = validateFields(f);
+  const errors = validateFields({ ...f, consent: body.consent });
   if (Object.keys(errors).length) return json(400, { error: "Formda düzeltilmesi gereken alanlar var.", errors });
 
   const ids = Array.isArray(body.items) ? body.items : [];
@@ -39,6 +39,8 @@ export async function POST(request) {
     email: f.email.trim(),
     address: f.address.trim(),
     payment: "card-demo",
+    consent: true,
+    consentAt: new Date().toISOString(),
     source: "ont-art-gallery"
   };
 

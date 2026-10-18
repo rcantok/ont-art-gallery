@@ -21,6 +21,7 @@ Yalnızca **orijinal** satılır; her eser tek adettir. Durumu: `Satışta` ya d
 
 - Sayfalar hash ile ayrılır: `#/` (hero + katalog), `#/eser/<id>`, `#/sanatci`, `#/iletisim`, `#/sepet`, `#/siparis`, `#/hesap`. Modal yok; geri/ileri tuşu çalışır.
 - Eser sayfası: **Şimdi Al** (sepete ekler, siparişe gider) ve **Sepete Ekle**. Sepet `localStorage`'da (`ont-cart`), bir eser en fazla bir kez.
+- Sipariş ve bildirim formlarında KVKK **açık rıza kutusu** (`consent`); işaretlenmeden gönderilemez, sunucu da zorunlu tutar. `#/gizlilik` sayfasında KVKK aydınlatma metni taslağı (hukukçu onayı bekliyor).
 - Sipariş sayfası: teslimat bilgileri + **demo kart formu**. Kart alanları okunmaz ve gönderilmez; fişte yalnızca `payment: "card-demo"`. Gerçek ödeme sunucu ve ödeme sağlayıcısı gerektirir.
 - Kargo ücreti belli değil: sepette "Onayda bildirilir" yazar, uydurulmaz.
 - Hesap sayfası şimdilik yalnızca arayüz ("yakında"); kullanıcı kararı.
@@ -79,6 +80,7 @@ Hafta 2 ödevi: deploy, secret, sunucu tarafı doğrulama, rate limit, KVKK, Exp
 
 1. **2.1 Git + Worktree** — özellik `ozellik/fiyat-sirala` worktree'sinde yarıdayken `main`'de hata düzeltildi: tarayıcı `ali@gmail`, yalnız boşluk ad/adres ve `abc` telefonu kabul ediyordu. Düzeltme `FIELD_RULES` / `validateFields` (2.4'te sunucuda da kullanılacak). Özellik: ızgarada "Sırala" (Önerilen, Fiyat ↑, Fiyat ↓). İkisi `--no-ff` ile birleşti, çakışma çıkmadı; ikisi de tarayıcıda doğrulandı. ✅
 2. **2.3 Secret + 2.4 Sunucu doğrulama ve istek sınırı** — formlar artık webhook'a doğrudan değil `/api/order` ve `/api/notify` (Vercel fonksiyonları, `api/`) üzerinden gider. Sunucu alanları `lib/validate.js` ile yeniden doğrular (sayfa da aynı dosyayı kullanır), fişi ve fiyatları `PRODUCTS`'tan kurar, aynı IP'den uç başına dakikada 10 isteğe izin verir (`lib/rate-limit.js`, bellek içi; birden çok kopyada gevşek, gerekirse Upstash Redis) ve fişi `WEBHOOK_URL`'ye `X-ONT-Secret: WEBHOOK_SECRET` başlığıyla iletir. Değerler: yerelde `.env.local` (geliştirme webhook.site adresi), canlıda Vercel panelinde (Production için ayrı adres ve anahtar, 2.2'de girilecek). `.gitignore` ve `.vercelignore` `.env*`'i dışarıda tutar; şablon `.env.example`. Eski webhook.site adresi git geçmişinde açık olduğu için kullanılmıyor. Testler `npm test` (19 test, sahte alıcıyla); uçtan uca sipariş geliştirme webhook'unda gizli anahtarla doğrulandı. JWT (admin) henüz yapılmadı.
+3. **2.5 KVKK + Privacy Policy** — sipariş ve "Benzerini haber ver" formlarına açık rıza kutusu (`ConsentCheckbox`, ortak `FIELD_RULES.consent`, yalnızca gerçek boolean `true` geçer). Rıza hem tarayıcıda hem `api/`'de zorunlu; fişe `consent: true` ve `consentAt` (ISO) eklenir. `#/gizlilik` → `PrivacyPage`: KVKK aydınlatma metni taslağı (veri sorumlusu, işlenen veriler, amaç, hukuki sebep, aktarım, saklama, m.11 hakları); "Taslak — hukukçu onayı gerekir" uyarısıyla. Alt bilgide Gizlilik ve KVKK bağlantısı. Testler `npm test` → 24. Tarayıcıda: rıza işaretsiz gönderim engellenir, işaretleyince hata kalkar, fiş webhook'a consent/consentAt ile ulaşır. JWT (opsiyonel) ve Vercel production yayını henüz yapılmadı.
 
 ## Hafta 1 sonrası: mağaza
 

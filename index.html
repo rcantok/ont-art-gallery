@@ -119,6 +119,16 @@
     .error { margin: 0; color: #b42318; font-weight: 600; }
     .field-error { font-size: 13px; font-weight: 600; letter-spacing: 0; color: #b42318; }
     .form [aria-invalid="true"] { border-color: #b42318; }
+    .consent { flex-direction: row; gap: 10px; align-items: flex-start; font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--muted); line-height: 1.5; }
+    .consent input { width: 20px; height: 20px; min-height: 0; margin-top: 1px; flex: none; accent-color: var(--accent); }
+    .consent a { color: var(--accent); font-weight: 600; }
+    .consent-note { font-size: 12px; color: var(--muted); margin: 0; }
+    .prose { max-width: 70ch; display: flex; flex-direction: column; gap: 18px; line-height: 1.7; }
+    .prose h2 { font-family: 'Archivo', sans-serif; font-size: 20px; margin: 16px 0 0; }
+    .prose p, .prose li { color: var(--ink); }
+    .prose ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+    .prose .muted { color: var(--muted); font-size: 14px; }
+    .prose .draft { background: var(--soft); border-left: 3px solid var(--accent); padding: 16px 18px; font-size: 14px; }
     .done { background: var(--soft); border-left: 3px solid var(--accent); padding: 20px; }
     .done h2 { margin: 0 0 8px; font-size: 24px; }
     .done p { margin: 0 0 6px; line-height: 1.6; }
@@ -299,6 +309,13 @@
       const { [e.target.name]: _, ...rest } = cur;
       return rest;
     });
+    // KVKK açık rıza kutusu: sipariş ve bildirim formlarında zorunlu; metni Gizlilik sayfasına bağlar
+    const ConsentCheckbox = ({ errors }) => (
+      <label className="consent">
+        <input type="checkbox" name="consent" {...invalidProps(errors, "consent")} />
+        <span>Kişisel verilerimin sipariş ve iletişim amacıyla işlenmesine ilişkin <a href="#/gizlilik" target="_blank" rel="noopener">Aydınlatma Metni</a>'ni okudum, açık rıza veriyorum.<FieldError errors={errors} name="consent" /></span>
+      </label>
+    );
 
     const Icon = {
       user: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>,
@@ -431,11 +448,12 @@
         e.preventDefault();
         const form = e.target;
         const f = formValues(form, ["name", "email"]);
-        if (!checkForm(form, f, setErrors)) return;
+        const consent = form.elements.consent.checked;
+        if (!checkForm(form, { ...f, consent }, setErrors)) return;
         setStatus("sending");
-        const r = await postForm("/api/notify", { ...f, productId: product.id });
+        const r = await postForm("/api/notify", { ...f, consent, productId: product.id });
         if (r.ok) return setStatus("done");
-        checkForm(form, f, setErrors, r.errors);
+        checkForm(form, { ...f, consent }, setErrors, r.errors);
         setFailure(r.error);
         setStatus("error");
       };
@@ -448,6 +466,7 @@
             <label>Ad Soyad<input name="name" autoComplete="name" required {...invalidProps(errors, "name")} /><FieldError errors={errors} name="name" /></label>
             <label>E-posta<input name="email" type="email" autoComplete="email" required {...invalidProps(errors, "email")} /><FieldError errors={errors} name="email" /></label>
           </div>
+          <ConsentCheckbox errors={errors} />
           {status === "error" && <p className="error" role="alert">{failure} Sorun sürerse {CONTACT_EMAIL} adresine yazın.</p>}
           <button className="btn" type="submit" disabled={status === "sending"}>{status === "sending" ? "Gönderiliyor…" : "Haber Ver"}</button>
         </form>
@@ -561,11 +580,12 @@
         e.preventDefault();
         const form = e.target;
         const f = formValues(form, ["name", "phone", "email", "address"]);
-        if (!checkForm(form, f, setErrors)) return;
+        const consent = form.elements.consent.checked;
+        if (!checkForm(form, { ...f, consent }, setErrors)) return;
         setStatus("sending");
-        const r = await postForm("/api/order", { ...f, items: items.map(p => p.id) });
+        const r = await postForm("/api/order", { ...f, consent, items: items.map(p => p.id) });
         if (r.ok) { setPlaced(r.order); cart.clear(); setStatus("done"); window.scrollTo(0, 0); return; }
-        checkForm(form, f, setErrors, r.errors);
+        checkForm(form, { ...f, consent }, setErrors, r.errors);
         setFailure(r.error);
         setStatus("error");
       };
@@ -612,6 +632,7 @@
                     <label>CVC<input inputMode="numeric" autoComplete="off" placeholder="000" /></label>
                   </div>
                 </fieldset>
+                <ConsentCheckbox errors={errors} />
                 {status === "error" && <p className="error" role="alert">{failure} Sorun sürerse {CONTACT_EMAIL} adresine yazın.</p>}
                 <button className="btn accent" type="submit" disabled={status === "sending"}>{status === "sending" ? "Gönderiliyor…" : `Siparişi Ver · ${formatPrice(total)}`}</button>
               </form>
@@ -717,6 +738,49 @@
       );
     }
 
+    // ---- PrivacyPage: KVKK aydınlatma metni (taslak; gerçek yayın öncesi hukukçu onayı gerekir) ----
+    function PrivacyPage() {
+      useEffect(() => { document.title = "Gizlilik ve KVKK Aydınlatma Metni — ONT Art Gallery"; }, []);
+      return (
+        <section className="page"><div className="wrap">
+          <a className="crumb" href="#/">{Icon.back} Ana sayfa</a>
+          <h1 className="h2" style={{ marginBottom: 24 }}>Gizlilik ve KVKK Aydınlatma Metni</h1>
+          <div className="prose">
+            <p className="draft"><strong>Taslak.</strong> Bu metin bir hazırlık taslağıdır; site gerçek satışa açılmadan önce bir hukuk danışmanı tarafından gözden geçirilip tamamlanmalıdır. Site şu an tanıtım/ödev amaçlı çalışmaktadır ve gerçek bir ödeme alınmamaktadır.</p>
+
+            <h2>Veri sorumlusu</h2>
+            <p>Osman Nihat Tok (ONT Art Gallery). İletişim: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. <span className="muted">(Açık unvan, adres ve telefon yayın öncesi eklenecektir.)</span></p>
+
+            <h2>İşlenen kişisel veriler</h2>
+            <ul>
+              <li><strong>Sipariş:</strong> ad soyad, e-posta, telefon, teslimat adresi.</li>
+              <li><strong>Benzerini haber ver:</strong> ad soyad, e-posta.</li>
+            </ul>
+            <p className="muted">Ödeme şu an demodur; kart bilgileri (numara, son kullanma, CVC) hiçbir şekilde toplanmaz, işlenmez ve iletilmez.</p>
+
+            <h2>İşleme amaçları</h2>
+            <ul>
+              <li>Siparişin alınması, hazırlanması ve Türkiye içi sigortalı kargoyla teslimi,</li>
+              <li>Sipariş ve teslimatla ilgili sizinle iletişim kurulması,</li>
+              <li>"Benzerini haber ver" talebinde, benzer bir eser geldiğinde size bilgi verilmesi.</li>
+            </ul>
+
+            <h2>Hukuki sebep</h2>
+            <p>Verileriniz, 6698 sayılı Kanun'un 5. maddesi uyarınca <strong>açık rızanıza</strong> ve sözleşmenin kurulup ifa edilmesi için gerekli olmasına dayanılarak işlenir. Formdaki onay kutusunu işaretlemeniz açık rıza anlamına gelir; rıza vermeden sipariş veya bildirim tamamlanamaz.</p>
+
+            <h2>Aktarım</h2>
+            <p>Verileriniz yalnızca siparişinizin teslimi için kargo firmasıyla, teslimat için gerekli olduğu ölçüde paylaşılır. Bunun dışında üçüncü kişilerle paylaşılmaz, yurt dışına aktarılmaz. <span className="muted">(Çalışılan kargo firması yayın öncesi burada belirtilecektir.)</span></p>
+
+            <h2>Saklama süresi</h2>
+            <p>Verileriniz işleme amacının gerektirdiği ve ilgili mevzuatın öngördüğü süre boyunca saklanır, sürenin sonunda silinir veya anonim hâle getirilir. <span className="muted">(Kesin süreler yayın öncesi belirlenecektir.)</span></p>
+
+            <h2>Haklarınız</h2>
+            <p>6698 sayılı Kanun'un 11. maddesi uyarınca; verilerinizin işlenip işlenmediğini öğrenme, bilgi talep etme, düzeltilmesini, silinmesini veya işlenmesine itiraz etme haklarına sahipsiniz. Başvurularınızı <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> adresine iletebilirsiniz.</p>
+          </div>
+        </div></section>
+      );
+    }
+
     function NotFound() {
       return <section className="page"><div className="wrap"><h1 className="h2">Sayfa bulunamadı</h1><p className="empty"><a href="#/" style={{ color: "var(--accent)", fontWeight: 700 }}>Eserlere dön</a></p></div></section>;
     }
@@ -738,6 +802,7 @@
       else if (page === "sepet") view = <CartPage cart={cart} />;
       else if (page === "siparis") view = <CheckoutPage cart={cart} />;
       else if (page === "hesap") view = <AccountPage />;
+      else if (page === "gizlilik") view = <PrivacyPage />;
       else view = <NotFound />;
 
       return (
@@ -747,7 +812,7 @@
           <footer className="site-footer">
             <div className="wide">
               <b>ONT Art Gallery</b>
-              <span>© {new Date().getFullYear()} Osman Nihat Tok. Tüm eserlerin hakları saklıdır.</span>
+              <span>© {new Date().getFullYear()} Osman Nihat Tok. Tüm eserlerin hakları saklıdır. · <a href="#/gizlilik" style={{ color: "inherit", textDecoration: "underline" }}>Gizlilik ve KVKK</a></span>
             </div>
           </footer>
         </>
