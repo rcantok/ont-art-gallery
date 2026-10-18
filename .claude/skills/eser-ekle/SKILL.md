@@ -17,6 +17,8 @@ Kullanıcı genelde dosya adının son rakamlarını verir (örn. "144834"); `ON
 | `50×70/` | `"50 × 70 cm"` | `12500` |
 | `Karışık/` | — | Kullanıcı kararıyla şimdilik eklenmiyor (ölçü ve fiyat net değil). İstenirse önce ölçü/fiyatı sor. |
 
+Fiyat tablodaki taban fiyattır (D kademesi). Eser daha üst bir kademeye (CLAUDE.md'deki fiyat kademeleri) aitse fiyatı kullanıcıya sor.
+
 ## 2. Görseli hazırla
 
 ```

@@ -54,7 +54,7 @@ Katalogdaki her bilgi gerçek olmalı. Bilinmeyen bilgi (ad, teknik, yıl) uydur
 - **Fotoğraflar:** `ON.TOK/` klasöründe, ölçüye göre gruplu: `35x50/`, `50×70/`, `Karışık/`. Klasör adı eserin ölçüsüdür (cm). `Karışık/` içindeki eserlerin ölçüleri net değil; bu eserlerde ölçü yazılmaz.
 - **Fotoğraf hazırlama:** `eser-ekle` skill'i ve `hazirla.py` aracı (yön düzeltme, otomatik kırpma, iki boy). Telefon fotoğrafları EXIF yön etiketi taşır; araç pikselleri çevirip EXIF'i atar, yoksa tarayıcı görseli ikinci kez döndürür.
 - `ON.TOK/` tam boy fotoğraflardır (~540 MB): sitede yalnızca seçilen eserlerin küçültülmüş kopyaları `images/` altında kullanılır, klasörün kendisi GitHub'a yüklenmez. Her kartın yorumunda kaynak fotoğrafın yolu yazar.
-- **Fiyatlar (orijinal):** 35×50 → 8.000 TL, 50×70 → 12.500 TL.
+- **Fiyatlar (orijinal):** ölçüye göre taban (35×50 → 8.000 TL, 50×70 → 12.500 TL) + eserin ağırlığına göre kademe: A başyapıt (50×70: 50.000–75.000, 35×50: 30.000–40.000), B öne çıkan (25.000–42.500 / 16.000–25.000), C seçkin (15.000–22.500 / 9.500–14.000), D taban. Kademeler eser fotoğraflarından önerildi ve kullanıcı onayladı; ressamın gözden geçirmesi bekleniyor. Eski düz fiyatlar git'te `fiyat-eski` etiketinde.
 - **Katalog kapsamı:** `35x50/` ve `50×70/` klasörlerinin tamamı eklendi (95 eser, `ont-001`–`ont-095`). Duvarda çekilmiş tekrar kareler ve iki tablonun bir arada çekildiği kare katalog dışı. `Karışık/` kullanıcı kararıyla şimdilik eklenmedi (ölçü ve fiyat net değil).
 - **Eser adları** kompozisyondan türetilmiş geçici adlardır (her kayıtta `DOLDURULACAK: ad geçici`); ressamın verdiği adlar gelince değiştirilir.
 
