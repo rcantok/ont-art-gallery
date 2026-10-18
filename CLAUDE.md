@@ -27,9 +27,9 @@ Yalnızca **orijinal** satılır; her eser tek adettir. Durumu: `Satışta` ya d
 
 Her eserin kalıcı bir kimliği vardır (`ont-001`, `ont-002`…), HTML'de `data-product-id` olarak durur.
 
-### Veri kaynağı: `PRODUCTS` (index.html)
+### Veri kaynağı: `PRODUCTS` (data/products.js)
 
-React sürümünde tüm eser bilgisi tek bir `PRODUCTS` dizisindedir; hero slaytları, filtre düğmeleri, ızgara, eser sayfası, sepet ve sipariş fişi buradan türetilir. Yeni eser = diziye bir nesne.
+Tüm eser bilgisi `data/products.js`'teki tek bir `PRODUCTS` dizisindedir; sayfa (hero, filtreler, ızgara, eser sayfası, sepet), sunucu (`api/order` fişi ve fiyatları) ve mobil uygulama bu dosyayı okur. Yeni eser = diziye bir nesne.
 
 - Alanlar: `id`, `title`, `subject` (konu → filtre), `technique` (kısa teknik etiketi), `medium` (künyedeki uzun hali), `size` (→ ölçü filtresi), `year`, `featured` (yalnızca hero'da dönen birkaç eserde `true`), `desc`, `image {src, thumb, alt, width, height}`, `source` (ON.TOK'taki kaynak fotoğraf), `original {price, status}`.
 - Görseller iki boy: `images/<id>.jpg` (1400 px, eser sayfası ve hero) ve `images/thumbs/<id>.jpg` (600 px, ızgara). 95 eserde sayfanın hızlı açılması ızgaranın küçük boyu kullanmasına bağlı.
@@ -78,6 +78,7 @@ Tam sözleşme ve kurallar `ont-standartlari` skill'indedir. Ödevin alanlarına
 Hafta 2 ödevi: deploy, secret, sunucu tarafı doğrulama, rate limit, KVKK, Expo. Yayın (GitHub Pages ve Vercel) kullanıcı isteğiyle güvenlik bitene kadar kapalı; Vercel'deki kırmızı çarpı bu yüzden.
 
 1. **2.1 Git + Worktree** — özellik `ozellik/fiyat-sirala` worktree'sinde yarıdayken `main`'de hata düzeltildi: tarayıcı `ali@gmail`, yalnız boşluk ad/adres ve `abc` telefonu kabul ediyordu. Düzeltme `FIELD_RULES` / `validateFields` (2.4'te sunucuda da kullanılacak). Özellik: ızgarada "Sırala" (Önerilen, Fiyat ↑, Fiyat ↓). İkisi `--no-ff` ile birleşti, çakışma çıkmadı; ikisi de tarayıcıda doğrulandı. ✅
+2. **2.3 Secret + 2.4 Sunucu doğrulama ve istek sınırı** — formlar artık webhook'a doğrudan değil `/api/order` ve `/api/notify` (Vercel fonksiyonları, `api/`) üzerinden gider. Sunucu alanları `lib/validate.js` ile yeniden doğrular (sayfa da aynı dosyayı kullanır), fişi ve fiyatları `PRODUCTS`'tan kurar, aynı IP'den uç başına dakikada 10 isteğe izin verir (`lib/rate-limit.js`, bellek içi; birden çok kopyada gevşek, gerekirse Upstash Redis) ve fişi `WEBHOOK_URL`'ye `X-ONT-Secret: WEBHOOK_SECRET` başlığıyla iletir. Değerler: yerelde `.env.local` (geliştirme webhook.site adresi), canlıda Vercel panelinde (Production için ayrı adres ve anahtar, 2.2'de girilecek). `.gitignore` ve `.vercelignore` `.env*`'i dışarıda tutar; şablon `.env.example`. Eski webhook.site adresi git geçmişinde açık olduğu için kullanılmıyor. Testler `npm test` (19 test, sahte alıcıyla); uçtan uca sipariş geliştirme webhook'unda gizli anahtarla doğrulandı. JWT (admin) henüz yapılmadı.
 
 ## Hafta 1 sonrası: mağaza
 

@@ -8,3 +8,10 @@ Ekran Kaydı *
 
 # macOS
 .DS_Store
+
+# Ortam değişkenleri: gizli değerler commit edilmez (yalnızca şablon)
+.env*
+!.env.example
+
+# Vercel CLI bağlantı klasörü
+.vercel

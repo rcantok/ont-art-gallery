@@ -10,9 +10,9 @@ description: ONT Art Gallery (AtölyeKart) React sayfasının kuralları — bil
 ## Bileşen standartları
 
 **Yapı**
-- Tek dosya, kurulumsuz: React 18 UMD + Babel standalone CDN'den; npm, derleme adımı ve ek dosya yok. Stiller dosyanın içindeki `<style>`'da.
+- Sayfa tek dosya, kurulumsuz: React 18 UMD + Babel standalone CDN'den, derleme adımı yok, stiller dosyanın içindeki `<style>`'da. Sunucuyla ortak olanlar ayrı ES modülleridir ve sayfaya `<script type="module">` ile gelir: eser kataloğu `data/products.js` (`window.ONT_PRODUCTS`), form kuralları `lib/validate.js` (`window.ONT_VALIDATE`). Sunucu fonksiyonları `api/`, yardımcıları `lib/`, testleri `tests/` (`npm test`).
 - Her bileşen tek bir işi yapar ve başında tek satırlık yorum taşır: `// ---- Ad: ne yapar ----`.
-- Dosya sırası: `PRODUCTS` → yardımcılar → bileşenler (sayfadaki sırayla) → `App` → `render`.
+- Dosya sırası: sabitler → yardımcılar → bileşenler (sayfadaki sırayla) → `App` → `render`.
 
 **Veri**
 - Eser bilgisi yalnızca `PRODUCTS`'tan okunur; bileşenin içine ad, fiyat, ölçü, görsel yolu yazılmaz.
@@ -36,7 +36,7 @@ Headless Chrome ile ekran görüntüsü al ve konsolu oku (Babel uyarısı dış
 
 ## Webhook formatı
 
-Site çok sayfalı bir mağazadır (hash yönlendirme: `#/`, `#/eser/<id>`, `#/sanatci`, `#/iletisim`, `#/sepet`, `#/siparis`, `#/hesap`). İki olay `POST` ile `WEBHOOK_URL`'ye tek bir JSON nesnesi olarak gider (`sendWebhook`). Baskı satışı yoktur; her eser tek orijinaldir.
+Site çok sayfalı bir mağazadır (hash yönlendirme: `#/`, `#/eser/<id>`, `#/sanatci`, `#/iletisim`, `#/sepet`, `#/siparis`, `#/hesap`). Tarayıcı form alanlarını ve eser kimliklerini sitenin kendi API'sine yollar (`postForm` → `/api/order`, `/api/notify`). Sunucu alanları `lib/validate.js` ile yeniden doğrular, fişi `PRODUCTS`'tan kurar ve `WEBHOOK_URL`'ye tek bir JSON nesnesi olarak iletir (`forwardToWebhook`, `X-ONT-Secret` başlığıyla). Baskı satışı yoktur; her eser tek orijinaldir.
 
 ### Sipariş — `event: "order"` (Sipariş sayfası, sepetin tamamı)
 
@@ -93,7 +93,7 @@ Sipariş sayfasındaki kart alanlarının `name` özniteliği yoktur ve kod tara
 
 ### Gönderim ve geri bildirim
 
-- Gönderim sürerken düğme pasif ve "Gönderiliyor…" yazar. `res.ok` ise onay görünür (siparişte sepet boşalır); değilse form ve yazılanlar kalır, hata metni gösterilir.
-- `WEBHOOK_URL` dosyanın başında tek sabittir. Hafta 1'de webhook.site test adresidir (herkese açık, geçici): testte gerçek ad, telefon, adres kullanılmaz. Sunucuya taşıma Hafta 2'de.
-- webhook.site adresinde CORS varsayılan olarak kapalıdır; `application/json` gönderimi tarayıcıda ön kontrol (OPTIONS) isteği yapar. Açmak için: `curl -X PUT https://webhook.site/token/<uuid> -H 'Content-Type: application/json' -d '{"cors": true}'`.
-- Doğrulama: `window.fetch`'i test kopyasında yakalayıp payload'ı alan alan kontrol et; kart verisinin payload'da olmadığını ayrıca doğrula. Son kanıt için webhook.site'ta gelen gövdeyi aç.
+- Gönderim sürerken düğme pasif ve "Gönderiliyor…" yazar. Başarılıysa onay görünür (siparişte sepet boşalır); değilse form ve yazılanlar kalır, sunucunun Türkçe hata metni gösterilir, sunucunun döndürdüğü alan hataları alanların altına yazılır.
+- `WEBHOOK_URL` ve `WEBHOOK_SECRET` yalnızca ortam değişkenidir: yerelde `.env.local` (git'e ve Vercel'e girmez), canlıda Vercel → Environment Variables. Tarayıcı koduna, `data/`'ya ya da `lib/validate.js`'e hiçbir adres veya anahtar yazılmaz. Webhook.site test adresidir: testte gerçek ad, telefon, adres kullanılmaz.
+- Sunucu yanıtları: 200 başarılı, 400 hatalı alan/istek (`errors`), 409 eser artık satışta değil, 429 istek sınırı (aynı IP, aynı uç, dakikada 10; `Retry-After`), 502 webhook'a iletilemedi.
+- Doğrulama: önce `npm test` (sahte alıcıyla; gerçek webhook'a gitmez). Uçtan uca denemede fişi webhook.site'ta alan alan ve `X-ONT-Secret` başlığıyla kontrol et; kart verisinin fişte olmadığını ayrıca doğrula.

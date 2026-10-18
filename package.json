@@ -1,0 +1,11 @@
+{
+  "name": "ont-art-gallery",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

@@ -5,7 +5,7 @@ description: ONT Art Gallery kataloğuna ON.TOK/ klasöründeki fotoğraflardan 
 
 # Eser ekle
 
-Bir ya da birden çok eseri `ON.TOK/` fotoğrafından kataloğa taşır: `images/` altında iki boy görsel ve `index.html` içindeki `PRODUCTS` dizisinde kayıt. Alanların anlamı ve "bilinmeyeni uydurma" kuralı CLAUDE.md'deki *Veri kaynağı: PRODUCTS* bölümündedir. Komutlar `AtölyeKart/` içinde çalıştırılır.
+Bir ya da birden çok eseri `ON.TOK/` fotoğrafından kataloğa taşır: `images/` altında iki boy görsel ve `data/products.js` içindeki `PRODUCTS` dizisinde kayıt (sayfa, sunucu ve mobil uygulama bu dosyayı okur). Alanların anlamı ve "bilinmeyeni uydurma" kuralı CLAUDE.md'deki *Veri kaynağı: PRODUCTS* bölümündedir. Komutlar `AtölyeKart/` içinde çalıştırılır.
 
 ## 1. Fotoğrafı bul ve künyeyi klasörden oku
 

@@ -1,0 +1,15 @@
+# Vercel'e yüklenmeyecekler. Git'e girmeyen dosyalar CLI ile yayında da yüklenmesin.
+# Gizli değerler: canlıda yalnızca Vercel → Environment Variables
+.env*
+!.env.example
+# Ham fotoğraflar (~540 MB), ekran kayıtları, ödev belgeleri
+ON.TOK/
+*.mov
+*.pdf
+Ekran Resmi *
+Ekran Kaydı *
+WhatsApp Image *
+# Proje notları ve testler sitenin parçası değil
+CLAUDE.md
+.claude/
+tests/
