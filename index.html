@@ -117,6 +117,8 @@
     .form fieldset { border: 1.5px solid var(--line); padding: 18px; margin: 0; display: flex; flex-direction: column; gap: 14px; }
     .form legend { font-family: 'Archivo', sans-serif; font-weight: 700; padding: 0 6px; }
     .error { margin: 0; color: #b42318; font-weight: 600; }
+    .field-error { font-size: 13px; font-weight: 600; letter-spacing: 0; color: #b42318; }
+    .form [aria-invalid="true"] { border-color: #b42318; }
     .done { background: var(--soft); border-left: 3px solid var(--accent); padding: 20px; }
     .done h2 { margin: 0 0 8px; font-size: 24px; }
     .done p { margin: 0 0 6px; line-height: 1.6; }
@@ -1622,6 +1624,33 @@
     // form.name formun kendi adıdır; alanlar elements üzerinden okunur
     const formValues = (form, names) => Object.fromEntries(names.map(n => [n, form.elements.namedItem(n)?.value ?? ""]));
 
+    // ---- Form doğrulama: tarayıcının kabul ettiği uç durumlar (ali@gmail, yalnız boşluk, "abc" telefon) burada reddedilir ----
+    // Kural true ya da hata metni döner. Aynı kurallar Hafta 2'de sunucuda da uygulanacak.
+    const FIELD_RULES = {
+      name: v => v.trim().length >= 2 || "Adınızı ve soyadınızı yazın.",
+      email: v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) || "Geçerli bir e-posta yazın (örnek: ad@alanadi.com).",
+      phone: v => (/^\+?[\d\s()-]+$/.test(v.trim()) && /^\d{10,13}$/.test(v.replace(/\D/g, ""))) || "Geçerli bir telefon numarası yazın (örnek: 0532 123 45 67).",
+      address: v => v.trim().length >= 10 || "Teslimat adresini mahalle, sokak ve ilçe ile yazın."
+    };
+    const validateFields = f => Object.fromEntries(Object.entries(f).map(([k, v]) => [k, FIELD_RULES[k] ? FIELD_RULES[k](v) : true]).filter(([, r]) => r !== true));
+    // Hatalı alanı ekran okuyucuya bağlar; hata metni FieldError ile alanın altında çıkar
+    const invalidProps = (errors, n) => errors[n] ? { "aria-invalid": true, "aria-describedby": "err-" + n } : {};
+    const FieldError = ({ errors, name }) => errors[name] ? <span id={"err-" + name} className="field-error">{errors[name]}</span> : null;
+    // Hatalıysa ilk hatalı alana odaklanır ve false döner
+    const checkForm = (form, f, setErrors) => {
+      const errors = validateFields(f);
+      setErrors(errors);
+      const first = Object.keys(errors)[0];
+      if (first) form.elements.namedItem(first).focus();
+      return !first;
+    };
+    // Yazmaya başlanan alanın hatası kalkar
+    const clearFieldError = setErrors => e => setErrors(cur => {
+      if (!cur[e.target.name]) return cur;
+      const { [e.target.name]: _, ...rest } = cur;
+      return rest;
+    });
+
     const Icon = {
       user: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>,
       bag: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 7h12l1 14H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>,
@@ -1741,20 +1770,23 @@
     // ---- NotifySimilar: satılmış eser için "benzerini haber ver" formu (stock_notify) ----
     function NotifySimilar({ product }) {
       const [status, setStatus] = useState("idle");
+      const [errors, setErrors] = useState({});
       const onSubmit = async e => {
         e.preventDefault();
+        const f = formValues(e.target, ["name", "email"]);
+        if (!checkForm(e.target, f, setErrors)) return;
         setStatus("sending");
-        try { await sendWebhook(notifyPayload(product, formValues(e.target, ["name", "email"]))); setStatus("done"); }
+        try { await sendWebhook(notifyPayload(product, f)); setStatus("done"); }
         catch (err) { setStatus("error"); }
       };
       if (status === "done") return <div className="done" role="status"><p>Teşekkürler. Benzer bir eser geldiğinde size e-postayla haber vereceğiz.</p></div>;
       return (
-        <form className="notify form" onSubmit={onSubmit} aria-label="Benzerini haber ver formu">
+        <form className="notify form" onSubmit={onSubmit} onInput={clearFieldError(setErrors)} aria-label="Benzerini haber ver formu">
           <h2>Benzerini haber ver</h2>
           <p>Bu eser satıldı. Benzer bir eser geldiğinde size haber verelim.</p>
           <div className="row">
-            <label>Ad Soyad<input name="name" autoComplete="name" required /></label>
-            <label>E-posta<input name="email" type="email" autoComplete="email" required /></label>
+            <label>Ad Soyad<input name="name" autoComplete="name" required {...invalidProps(errors, "name")} /><FieldError errors={errors} name="name" /></label>
+            <label>E-posta<input name="email" type="email" autoComplete="email" required {...invalidProps(errors, "email")} /><FieldError errors={errors} name="email" /></label>
           </div>
           {status === "error" && <p className="error" role="alert">Gönderilemedi. Lütfen tekrar deneyin ya da {CONTACT_EMAIL} adresine yazın.</p>}
           <button className="btn" type="submit" disabled={status === "sending"}>{status === "sending" ? "Gönderiliyor…" : "Haber Ver"}</button>
@@ -1860,12 +1892,15 @@
     function CheckoutPage({ cart }) {
       const [status, setStatus] = useState("idle");
       const [placed, setPlaced] = useState(null);
+      const [errors, setErrors] = useState({});
       const items = cart.items;
       const total = items.reduce((s, p) => s + p.original.price, 0);
 
       const onSubmit = async e => {
         e.preventDefault();
-        const payload = orderPayload(items, formValues(e.target, ["name", "email", "phone", "address"]));
+        const f = formValues(e.target, ["name", "phone", "email", "address"]);
+        if (!checkForm(e.target, f, setErrors)) return;
+        const payload = orderPayload(items, f);
         setStatus("sending");
         try { await sendWebhook(payload); setPlaced(payload); cart.clear(); setStatus("done"); window.scrollTo(0, 0); }
         catch (err) { setStatus("error"); }
@@ -1893,15 +1928,15 @@
             <a className="crumb" href="#/sepet">{Icon.back} Sepete dön</a>
             <h1 className="h2" style={{ marginBottom: 32 }}>Sipariş</h1>
             <div className="cart-grid">
-              <form className="form" onSubmit={onSubmit} aria-label="Sipariş formu">
+              <form className="form" onSubmit={onSubmit} onInput={clearFieldError(setErrors)} aria-label="Sipariş formu">
                 <fieldset>
                   <legend>Teslimat bilgileri</legend>
                   <div className="row">
-                    <label>Ad Soyad<input name="name" autoComplete="name" required /></label>
-                    <label>Telefon<input name="phone" type="tel" autoComplete="tel" required /></label>
+                    <label>Ad Soyad<input name="name" autoComplete="name" required {...invalidProps(errors, "name")} /><FieldError errors={errors} name="name" /></label>
+                    <label>Telefon<input name="phone" type="tel" autoComplete="tel" required {...invalidProps(errors, "phone")} /><FieldError errors={errors} name="phone" /></label>
                   </div>
-                  <label>E-posta<input name="email" type="email" autoComplete="email" required /></label>
-                  <label>Teslimat adresi<textarea name="address" rows="3" autoComplete="street-address" required></textarea></label>
+                  <label>E-posta<input name="email" type="email" autoComplete="email" required {...invalidProps(errors, "email")} /><FieldError errors={errors} name="email" /></label>
+                  <label>Teslimat adresi<textarea name="address" rows="3" autoComplete="street-address" required {...invalidProps(errors, "address")}></textarea><FieldError errors={errors} name="address" /></label>
                 </fieldset>
                 <fieldset>
                   <legend>Ödeme</legend>
