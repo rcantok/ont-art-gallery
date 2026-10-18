@@ -73,6 +73,12 @@ Adımlar sırayla ilerler; her adım bir öncekinin üzerine kurulur.
 
 Tam sözleşme ve kurallar `ont-standartlari` skill'indedir. Ödevin alanlarına galeri için eklenenler: siparişte `items`, `total`, `address`, `payment`; bildirimde `item`.
 
+## Ödev yol haritası (Hafta 2)
+
+Hafta 2 ödevi: deploy, secret, sunucu tarafı doğrulama, rate limit, KVKK, Expo. Yayın (GitHub Pages ve Vercel) kullanıcı isteğiyle güvenlik bitene kadar kapalı; Vercel'deki kırmızı çarpı bu yüzden.
+
+1. **2.1 Git + Worktree** — özellik `ozellik/fiyat-sirala` worktree'sinde yarıdayken `main`'de hata düzeltildi: tarayıcı `ali@gmail`, yalnız boşluk ad/adres ve `abc` telefonu kabul ediyordu. Düzeltme `FIELD_RULES` / `validateFields` (2.4'te sunucuda da kullanılacak). Özellik: ızgarada "Sırala" (Önerilen, Fiyat ↑, Fiyat ↓). İkisi `--no-ff` ile birleşti, çakışma çıkmadı; ikisi de tarayıcıda doğrulandı. ✅
+
 ## Hafta 1 sonrası: mağaza
 
 Kullanıcı isteğiyle tek sayfa + modal yapısı çok sayfalı mağazaya dönüştürüldü (eser sayfası, sepet, sipariş, demo ödeme, hesap arayüzü, sanatçı fotoğrafı ve Instagram). Bileşenler: `Header`, `Hero`, `HomePage`, `ProductImage`, `ProductCard`, `ProductList`, `ProductPage`, `NotifySimilar`, `CartPage`, `CheckoutPage`, `ArtistPage`, `ContactPage`, `SiteQr`, `AccountPage`, `NotFound`, `App` (yönlendirme `useRoute`, sepet `useCart`).
