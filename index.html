@@ -61,7 +61,7 @@
     .works-head { margin-bottom: 32px; display: flex; flex-direction: column; gap: 18px; }
     .filter-groups { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
     .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .filters .label { min-width: 52px; font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+    .filters .label { min-width: 72px; font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
     .filters button { min-height: 44px; padding: 0 18px; border-radius: 99px; cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; border: 1.5px solid #c9c6bf; background: transparent; color: var(--ink); }
     .filters button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
     .count { margin: 0 0 24px; font-size: 14px; color: var(--muted); }
@@ -1562,6 +1562,12 @@
     const SUBJECTS = [ALL, ...new Set(PRODUCTS.map(p => p.subject))];
     const SIZES = [ALL, ...new Set(PRODUCTS.map(p => p.size).filter(Boolean))];
     const sizeLabel = size => size === ALL ? ALL : size.replace(" cm", "");
+    // Sıralama: "Önerilen" katalog sırasıdır; fiyatı belli olmayan eser her iki yönde de sona kalır
+    const byPrice = dir => (a, b) => {
+      const x = a.original.price, y = b.original.price;
+      return x == null || y == null ? (x == null) - (y == null) : dir * (x - y);
+    };
+    const SORTS = { "Önerilen": null, "Fiyat ↑": byPrice(1), "Fiyat ↓": byPrice(-1) };
 
     // ---- Yönlendirme: sayfalar adres çubuğundaki # ile ayrılır (GitHub Pages'te sunucu ayarı gerekmez) ----
     const parseRoute = () => {
@@ -1738,7 +1744,9 @@
     function HomePage() {
       const [subject, setSubject] = useState(ALL);
       const [size, setSize] = useState(ALL);
-      const visible = PRODUCTS.filter(p => (subject === ALL || p.subject === subject) && (size === ALL || p.size === size));
+      const [sort, setSort] = useState("Önerilen");
+      const filtered = PRODUCTS.filter(p => (subject === ALL || p.subject === subject) && (size === ALL || p.size === size));
+      const visible = SORTS[sort] ? [...filtered].sort(SORTS[sort]) : filtered;
       return (
         <>
           <Hero slides={PRODUCTS.filter(p => p.featured).map(p => p.image.src)} />
@@ -1754,6 +1762,10 @@
                   <div className="filters" role="group" aria-label="Ölçüye göre filtrele">
                     <span className="label" aria-hidden="true">Ölçü</span>
                     {SIZES.map(f => <button key={f} aria-pressed={size === f} onClick={() => setSize(f)}>{sizeLabel(f)}</button>)}
+                  </div>
+                  <div className="filters" role="group" aria-label="Sırala">
+                    <span className="label" aria-hidden="true">Sırala</span>
+                    {Object.keys(SORTS).map(s => <button key={s} aria-pressed={sort === s} onClick={() => setSort(s)}>{s}</button>)}
                   </div>
                 </div>
               </div>
