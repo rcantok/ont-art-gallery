@@ -220,7 +220,7 @@
 
     const CONTACT_EMAIL = "ragipcantok@gmail.com";
     const INSTAGRAM = { url: "https://www.instagram.com/osmantok/", handle: "@osmantok" };
-    const SITE_URL = "https://rcantok.github.io/ont-art-gallery/";   // site QR'ı bu adresi açar
+    const SITE_URL = "https://ont-art-gallery.vercel.app/";   // site QR'ı bu adresi açar
     const CART_KEY = "ont-cart";
 
     // ==== ESERLER — data/products.js'ten (sayfa, sunucu ve mobil aynı listeyi okur) ====
@@ -309,6 +309,15 @@
       const { [e.target.name]: _, ...rest } = cur;
       return rest;
     });
+    // Çift gönderim kilidi: düğme "Gönderiliyor…" olana kadar geçen kısa anda ikinci tıklamayı da durdurur
+    function useSubmitLock() {
+      const busy = useRef(false);
+      return async run => {
+        if (busy.current) return;
+        busy.current = true;
+        try { await run(); } finally { busy.current = false; }
+      };
+    }
     // KVKK açık rıza kutusu: sipariş ve bildirim formlarında zorunlu; metni Gizlilik sayfasına bağlar
     const ConsentCheckbox = ({ errors }) => (
       <label className="consent">
@@ -444,9 +453,9 @@
       const [status, setStatus] = useState("idle");
       const [errors, setErrors] = useState({});
       const [failure, setFailure] = useState("");
-      const onSubmit = async e => {
-        e.preventDefault();
-        const form = e.target;
+      const lock = useSubmitLock();
+      const onSubmit = e => { e.preventDefault(); lock(() => submit(e.target)); };
+      const submit = async form => {
         const f = formValues(form, ["name", "email"]);
         const consent = form.elements.consent.checked;
         if (!checkForm(form, { ...f, consent }, setErrors)) return;
@@ -576,9 +585,9 @@
       const items = cart.items;
       const total = items.reduce((s, p) => s + p.original.price, 0);
 
-      const onSubmit = async e => {
-        e.preventDefault();
-        const form = e.target;
+      const lock = useSubmitLock();
+      const onSubmit = e => { e.preventDefault(); lock(() => submit(e.target)); };
+      const submit = async form => {
         const f = formValues(form, ["name", "phone", "email", "address"]);
         const consent = form.elements.consent.checked;
         if (!checkForm(form, { ...f, consent }, setErrors)) return;

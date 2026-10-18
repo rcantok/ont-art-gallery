@@ -178,3 +178,13 @@ test("bildirimde rıza yoksa → 400", async () => {
   assert.equal(res.status, 400);
   assert.ok((await res.json()).errors.consent);
 });
+
+test("temizlik: HTML işaretleri ve satır sonları fişe girmez", async () => {
+  received.length = 0;
+  const res = await post(order, { ...validOrder, name: "Ali <script>alert(1)</script> Veli", address: "Moda Cd. 1\nKadıköy <b>İstanbul</b>" });
+  assert.equal(res.status, 200);
+  const b = received[0].body;
+  assert.doesNotMatch(b.name + b.address, /[<>\n]/);
+  assert.equal(b.name, "Ali scriptalert(1)/script Veli");
+  assert.equal(b.address, "Moda Cd. 1 Kadıköy bİstanbul/b");
+});
