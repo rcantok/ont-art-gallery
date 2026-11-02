@@ -1,5 +1,7 @@
-// ---- POST /api/notify: satılmış eser için "Benzerini haber ver" isteğini doğrular ve webhook'a iletir ----
-import { PRODUCTS } from "../data/products.js";
+// ---- POST /api/notify: "Stok bildirimi iste" isteğini doğrular ve webhook'a iletir ----
+// İki durumda kabul edilir: tükenmiş demo magnet ("restock": stok gelince haber ver)
+// ya da satılmış orijinal eser ("similar": benzeri gelince haber ver). Durum lib/catalog.js'ten okunur.
+import { resolveItem } from "../lib/catalog.js";
 import { validateFields } from "../lib/validate.js";
 import { json, limitOrNull, readBody, pickFields, forwardToWebhook } from "../lib/server.js";
 
@@ -14,15 +16,19 @@ export async function POST(request) {
   const errors = validateFields({ ...f, consent: body.consent });
   if (Object.keys(errors).length) return json(400, { error: "Formda düzeltilmesi gereken alanlar var.", errors });
 
-  const product = PRODUCTS.find(p => p.id === body.productId);
-  if (!product || product.original.status !== "sold") return json(400, { error: "Bu eser için bildirim istenemez." });
+  const target = resolveItem(body.productId);
+  const item = !target ? null
+    : target.kind === "magnet" && target.stock === 0 ? "restock"
+    : target.kind === "original" && target.product.original.status === "sold" ? "similar"
+    : null;
+  if (!item) return json(400, { error: "Bu ürün için bildirim istenemez." });
 
   const payload = {
     event: "stock_notify",
     name: f.name.trim(),
-    productId: product.id,
-    productName: product.title,
-    item: "similar",
+    productId: target.productId,
+    productName: target.productName,
+    item,
     email: f.email.trim(),
     consent: true,
     consentAt: new Date().toISOString(),

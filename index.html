@@ -129,6 +129,22 @@
     .prose ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
     .prose .muted { color: var(--muted); font-size: 14px; }
     .prose .draft { background: var(--soft); border-left: 3px solid var(--accent); padding: 16px 18px; font-size: 14px; }
+    .magnet-box { margin-top: 28px; padding: 20px; background: var(--soft); display: flex; flex-direction: column; gap: 12px; }
+    .magnet-box h2 { font-family: 'Archivo', sans-serif; font-size: 18px; margin: 0; }
+    .magnet-box .meta { margin: 0; }
+    .magnet-box .notify { margin-top: 4px; }
+    .magnet-box .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+    .magnet-row { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+    .magnet-row .price { font-size: 20px; }
+    .demo-tag { align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); border: 1.5px solid var(--accent); padding: 3px 8px; }
+    .stock { font-size: 13px; font-weight: 700; color: var(--accent); }
+    .stock.out { color: #b42318; }
+    .qty { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
+    .qty select { font: inherit; min-height: 44px; padding: 0 10px; border: 1.5px solid #cfccc5; background: var(--paper, #fff); color: var(--ink); }
+    .demo-small { margin: 0; font-size: 12px; color: var(--muted); }
+    .demo-banner { margin: 0 0 16px; padding: 12px 16px; background: var(--soft); border-left: 3px solid var(--accent); font-size: 14px; }
+    .demo-banner b { color: var(--accent); margin-right: 6px; text-transform: uppercase; letter-spacing: .12em; font-size: 12px; }
+    .page-lede { margin: 8px 0 20px; color: var(--muted); }
     .done { background: var(--soft); border-left: 3px solid var(--accent); padding: 20px; }
     .done h2 { margin: 0 0 8px; font-size: 24px; }
     .done p { margin: 0 0 6px; line-height: 1.6; }
@@ -211,8 +227,11 @@
   <script type="module">
     import { PRODUCTS } from "./data/products.js";
     import { validateFields } from "./lib/validate.js";
+    import * as catalog from "./lib/catalog.js";
+    import { MAGNET } from "./data/products.js";
     window.ONT_PRODUCTS = PRODUCTS;
     window.ONT_VALIDATE = validateFields;
+    window.ONT_CATALOG = { ...catalog, MAGNET };
   </script>
 
   <script type="text/babel" data-presets="react">
@@ -225,6 +244,9 @@
 
     // ==== ESERLER — data/products.js'ten (sayfa, sunucu ve mobil aynı listeyi okur) ====
     const PRODUCTS = window.ONT_PRODUCTS;
+    // Magnetler (demo) ve kimlik çözümleyici lib/catalog.js'ten: sunucu da aynı kuralı uygular
+    const { MAGNET, magnetId, magnetStock, resolveItem } = window.ONT_CATALOG;
+    const MAGNET_DEMO_NOTE = "Magnetler demo ürünüdür: sipariş alınır, gönderim yapılmaz.";
     // ==========================================
 
     // ---- Veriden ekran metnine yardımcılar ----
@@ -248,7 +270,7 @@
     // ---- Yönlendirme: sayfalar adres çubuğundaki # ile ayrılır (GitHub Pages'te sunucu ayarı gerekmez) ----
     const parseRoute = () => {
       const parts = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
-      return { page: parts[0] || "", id: parts[1] || null };
+      return { page: parts[0] || "", id: parts[1] || null, sub: parts[2] || null };
     };
     function useRoute() {
       const [route, setRoute] = useState(parseRoute);
@@ -261,19 +283,27 @@
     }
     const go = path => { location.hash = path; };
 
-    // ---- Sepet: eser kimlikleri tarayıcıda saklanır (orijinal tek olduğu için her eser en fazla bir kez) ----
+    // ---- Sepet: kalemler tarayıcıda saklanır [{ id, qty }]; id orijinal eser ("ont-001") ya da magnet ("mag-ont-001") ----
+    // Orijinal tek adettir; magnette adet stok ve sipariş sınırıyla kısıtlanır. Eski sürümün düz kimlik listesi de okunur.
+    const fitCart = entries => entries
+      .map(e => typeof e === "string" ? { id: e, qty: 1 } : e)
+      .filter(e => e && resolveItem(e.id)?.maxQty > 0)
+      .map(e => ({ id: e.id, qty: Math.min(Math.max(1, Math.floor(Number(e.qty)) || 1), resolveItem(e.id).maxQty) }));
     function useCart() {
-      const [ids, setIds] = useState(() => {
-        try { return (JSON.parse(localStorage.getItem(CART_KEY)) || []).filter(id => isBuyable(byId(id))); } catch (e) { return []; }
+      const [entries, setEntries] = useState(() => {
+        try { return fitCart(JSON.parse(localStorage.getItem(CART_KEY)) || []); } catch (e) { return []; }
       });
-      useEffect(() => { try { localStorage.setItem(CART_KEY, JSON.stringify(ids)); } catch (e) {} }, [ids]);
+      useEffect(() => { try { localStorage.setItem(CART_KEY, JSON.stringify(entries)); } catch (e) {} }, [entries]);
+      const qtyOf = id => entries.find(e => e.id === id)?.qty ?? 0;
       return {
-        ids,
-        items: ids.map(byId).filter(Boolean),
-        has: id => ids.includes(id),
-        add: id => setIds(cur => cur.includes(id) ? cur : [...cur, id]),
-        remove: id => setIds(cur => cur.filter(x => x !== id)),
-        clear: () => setIds([])
+        items: entries.map(e => ({ ...resolveItem(e.id), qty: e.qty })),
+        count: entries.reduce((s, e) => s + e.qty, 0),
+        has: id => qtyOf(id) > 0,
+        qtyOf,
+        // Ürünü sepete koyar ya da adedini günceller (sınırın üstü kırpılır)
+        set: (id, qty = 1) => setEntries(cur => fitCart([...cur.filter(e => e.id !== id), { id, qty }])),
+        remove: id => setEntries(cur => cur.filter(e => e.id !== id)),
+        clear: () => setEntries([])
       };
     }
 
@@ -343,10 +373,11 @@
             <a className="logo" href="#/" aria-label="Ana sayfa"><b>ONT</b><small>Art Gallery</small></a>
             <nav aria-label="Ana menü">
               <a href="#/" aria-current={page === "" || page === "eser" ? "page" : undefined}>Eserler</a>
+              <a href="#/magnetler" aria-current={cur("magnetler")}>Magnetler</a>
               <a href="#/sanatci" aria-current={cur("sanatci")}>Sanatçı</a>
               <a href="#/iletisim" aria-current={cur("iletisim")}>İletişim</a>
               <a className="icon-link" href="#/hesap" aria-current={cur("hesap")} aria-label="Hesap">{Icon.user}</a>
-              <a className="icon-link" href="#/sepet" aria-current={cur("sepet")} aria-label={`Sepet, ${cartCount} eser`}>
+              <a className="icon-link" href="#/sepet" aria-current={cur("sepet")} aria-label={`Sepet, ${cartCount} ürün`}>
                 {Icon.bag}{cartCount > 0 && <span className="badge" aria-hidden="true">{cartCount}</span>}
               </a>
             </nav>
@@ -448,8 +479,10 @@
       );
     }
 
-    // ---- NotifySimilar: satılmış eser için "benzerini haber ver" formu (stock_notify) ----
-    function NotifySimilar({ product }) {
+    // ---- NotifyForm: "Stok bildirimi iste" (stock_notify) ----
+    // Tükenmiş magnet için "stok gelince haber ver" (restock), satılmış orijinal için "benzerini haber ver" (similar)
+    function NotifyForm({ productId, kind }) {
+      const magnet = kind === "magnet";
       const [status, setStatus] = useState("idle");
       const [errors, setErrors] = useState({});
       const [failure, setFailure] = useState("");
@@ -460,17 +493,19 @@
         const consent = form.elements.consent.checked;
         if (!checkForm(form, { ...f, consent }, setErrors)) return;
         setStatus("sending");
-        const r = await postForm("/api/notify", { ...f, consent, productId: product.id });
+        const r = await postForm("/api/notify", { ...f, consent, productId });
         if (r.ok) return setStatus("done");
         checkForm(form, { ...f, consent }, setErrors, r.errors);
         setFailure(r.error);
         setStatus("error");
       };
-      if (status === "done") return <div className="done" role="status"><p>Teşekkürler. Benzer bir eser geldiğinde size e-postayla haber vereceğiz.</p></div>;
+      if (status === "done") {
+        return <div className="done" role="status"><p>{magnet ? "Teşekkürler. Magnet yeniden stoğa girince size e-postayla haber vereceğiz." : "Teşekkürler. Benzer bir eser geldiğinde size e-postayla haber vereceğiz."}</p></div>;
+      }
       return (
-        <form className="notify form" onSubmit={onSubmit} onInput={clearFieldError(setErrors)} aria-label="Benzerini haber ver formu">
-          <h2>Benzerini haber ver</h2>
-          <p>Bu eser satıldı. Benzer bir eser geldiğinde size haber verelim.</p>
+        <form className="notify form" onSubmit={onSubmit} onInput={clearFieldError(setErrors)} aria-label={magnet ? "Stok bildirimi formu" : "Benzerini haber ver formu"}>
+          <h2>{magnet ? "Stok gelince haber ver" : "Benzerini haber ver"}</h2>
+          <p>{magnet ? "Bu magnet tükendi. Yeniden geldiğinde size haber verelim." : "Bu eser satıldı. Benzer bir eser geldiğinde size haber verelim."}</p>
           <div className="row">
             <label>Ad Soyad<input name="name" autoComplete="name" required {...invalidProps(errors, "name")} /><FieldError errors={errors} name="name" /></label>
             <label>E-posta<input name="email" type="email" autoComplete="email" required {...invalidProps(errors, "email")} /><FieldError errors={errors} name="email" /></label>
@@ -482,10 +517,48 @@
       );
     }
 
+    // ---- QtySelect: adet seçimi (1..max) ----
+    const QtySelect = ({ value, max, onChange, label = "Adet" }) => (
+      <label className="qty">{label}
+        <select value={value} onChange={e => onChange(Number(e.target.value))}>
+          {Array.from({ length: max }, (_, i) => i + 1).map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </label>
+    );
+
+    // ---- MagnetBox: eser sayfasında eserin demo magneti (stok, adet, sepete ekle ya da stok bildirimi) ----
+    function MagnetBox({ product, cart }) {
+      const id = magnetId(product.id);
+      const item = resolveItem(id);
+      const inCart = cart.qtyOf(id);
+      const [qty, setQty] = useState(1);
+      return (
+        <div className="magnet-box" id="magnet">
+          <span className="demo-tag">Demo</span>
+          <h2>Buzdolabı magneti</h2>
+          <p className="meta">{product.title} · {MAGNET.prepDays} iş günü içinde hazırlanır</p>
+          <div className="magnet-row">
+            <b className="price">{formatPrice(MAGNET.price)}</b>
+            <span className={`stock${item.stock === 0 ? " out" : ""}`}>{item.stock === 0 ? "Tükendi" : `Stokta ${item.stock} adet`}</span>
+          </div>
+          {item.stock === 0 ? <NotifyForm key={id} productId={id} kind="magnet" /> : (
+            <div className="actions">
+              <QtySelect value={Math.min(qty, item.maxQty)} max={item.maxQty} onChange={setQty} />
+              <button className="btn secondary" onClick={() => cart.set(id, qty)}>{inCart ? "Sepeti Güncelle" : "Sepete Ekle"}</button>
+              {inCart > 0 && <a className="link-btn" href="#/sepet">Sepette {inCart} adet · Sepete git</a>}
+            </div>
+          )}
+          <p className="demo-small">{MAGNET_DEMO_NOTE}</p>
+        </div>
+      );
+    }
+
     // ---- ProductPage: eserin kendi sayfası (görsel, künye, satın alma, aynı konudan diğer eserler) ----
-    function ProductPage({ id, cart }) {
+    function ProductPage({ id, sub, cart }) {
       const product = byId(id);
       useEffect(() => { if (product) document.title = `${product.title} — ONT Art Gallery`; }, [product]);
+      // #/eser/<id>/magnet: sayfa açılınca magnet kutusuna kaydır
+      useEffect(() => { if (sub === "magnet") document.getElementById("magnet")?.scrollIntoView({ block: "center" }); }, [id, sub]);
       if (!product) return <NotFound />;
 
       const related = PRODUCTS.filter(p => p.subject === product.subject && p.id !== product.id).slice(0, 4);
@@ -506,22 +579,23 @@
                 {sold ? (
                   <div className="buy">
                     <span className="status-sold">Satıldı</span>
-                    <NotifySimilar key={product.id} product={product} />
+                    <NotifyForm key={product.id} productId={product.id} kind="original" />
                   </div>
                 ) : (
                   <div className="buy">
                     <div className="big-price">{formatPrice(product.original.price)}</div>
                     {isBuyable(product) && (
                       <div className="actions">
-                        <button className="btn accent" onClick={() => { cart.add(product.id); go("/siparis"); }}>Şimdi Al</button>
+                        <button className="btn accent" onClick={() => { cart.set(product.id); go("/siparis"); }}>Şimdi Al</button>
                         {inCart
                           ? <a className="btn secondary" href="#/sepet">Sepette · Sepete git</a>
-                          : <button className="btn secondary" onClick={() => cart.add(product.id)}>Sepete Ekle</button>}
+                          : <button className="btn secondary" onClick={() => cart.set(product.id)}>Sepete Ekle</button>}
                       </div>
                     )}
                     <p className="note">Türkiye içine sigortalı kargo ile, özel olarak paketlenerek gönderilir. Eser imzalıdır.</p>
                   </div>
                 )}
+                <MagnetBox key={product.id} product={product} cart={cart} />
               </div>
             </div>
             {related.length > 0 && (
@@ -535,9 +609,11 @@
       );
     }
 
-    // ---- CartPage: sepetteki eserler ve özet ----
+    // ---- CartPage: sepetteki ürünler (orijinal eser ya da demo magnet) ve özet ----
+    const itemHref = i => `#/eser/${i.product.id}${i.kind === "magnet" ? "/magnet" : ""}`;
     function CartPage({ cart }) {
-      const total = cart.items.reduce((s, p) => s + p.original.price, 0);
+      const total = cart.items.reduce((s, i) => s + i.price * i.qty, 0);
+      const hasMagnet = cart.items.some(i => i.kind === "magnet");
       return (
         <section className="page">
           <div className="wrap">
@@ -548,25 +624,27 @@
             ) : (
               <div className="cart-grid">
                 <ul className="cart-list">
-                  {cart.items.map(p => (
-                    <li key={p.id} className="cart-item">
-                      <a href={`#/eser/${p.id}`}><ProductImage {...p.image} src={p.image.thumb} /></a>
+                  {cart.items.map(i => (
+                    <li key={i.productId} className="cart-item">
+                      <a href={itemHref(i)}><ProductImage {...i.product.image} src={i.product.image.thumb} /></a>
                       <div>
-                        <a href={`#/eser/${p.id}`}><b>{p.title}</b></a>
-                        <small>{metaLine(p)} · Orijinal</small>
-                        <button className="link-btn" onClick={() => cart.remove(p.id)} aria-label={`${p.title} eserini sepetten çıkar`}>Kaldır</button>
+                        <a href={itemHref(i)}><b>{i.productName}</b></a>
+                        <small>{i.kind === "magnet" ? `Magnet (demo) · ${MAGNET.prepDays} iş günü içinde hazırlanır` : `${metaLine(i.product)} · Orijinal`}</small>
+                        {i.kind === "magnet" && <QtySelect value={i.qty} max={i.maxQty} onChange={q => cart.set(i.productId, q)} />}
+                        <button className="link-btn" onClick={() => cart.remove(i.productId)} aria-label={`${i.productName} ürününü sepetten çıkar`}>Kaldır</button>
                       </div>
-                      <span className="price">{formatPrice(p.original.price)}</span>
+                      <span className="price">{formatPrice(i.price * i.qty)}</span>
                     </li>
                   ))}
                 </ul>
                 <aside className="summary" aria-label="Sipariş özeti">
                   <h2>Özet</h2>
-                  <div className="line"><span>{cart.items.length} eser</span><span>{formatPrice(total)}</span></div>
+                  <div className="line"><span>{cart.count} ürün</span><span>{formatPrice(total)}</span></div>
                   <div className="line"><span>Kargo</span><span>Onayda bildirilir</span></div>
                   <div className="line total"><span>Toplam</span><span>{formatPrice(total)}</span></div>
                   <a className="btn accent" href="#/siparis">Siparişi Tamamla</a>
                   <p className="note">Türkiye içi sigortalı kargo. Kargo ücreti sipariş onay e-postasında bildirilir.</p>
+                  {hasMagnet && <p className="demo-small">{MAGNET_DEMO_NOTE}</p>}
                 </aside>
               </div>
             )}
@@ -583,7 +661,8 @@
       const [errors, setErrors] = useState({});
       const [failure, setFailure] = useState("");
       const items = cart.items;
-      const total = items.reduce((s, p) => s + p.original.price, 0);
+      const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+      const hasMagnet = items.some(i => i.kind === "magnet");
 
       const lock = useSubmitLock();
       const onSubmit = e => { e.preventDefault(); lock(() => submit(e.target)); };
@@ -592,7 +671,7 @@
         const consent = form.elements.consent.checked;
         if (!checkForm(form, { ...f, consent }, setErrors)) return;
         setStatus("sending");
-        const r = await postForm("/api/order", { ...f, consent, items: items.map(p => p.id) });
+        const r = await postForm("/api/order", { ...f, consent, items: items.map(i => ({ productId: i.productId, quantity: i.qty })) });
         if (r.ok) { setPlaced(r.order); cart.clear(); setStatus("done"); window.scrollTo(0, 0); return; }
         checkForm(form, { ...f, consent }, setErrors, r.errors);
         setFailure(r.error);
@@ -606,6 +685,7 @@
               <h2>Siparişiniz alındı</h2>
               <p>{placed.productName} · {formatPrice(placed.total)}</p>
               <p>Sipariş özeti ve kargo bilgisi {placed.email} adresine gönderilecek.</p>
+              {placed.demo && <p className="demo-small">{MAGNET_DEMO_NOTE}</p>}
             </div>
             <p style={{ marginTop: 24 }}><a className="btn secondary" href="#/">Eserlere dön</a></p>
           </div></section>
@@ -647,9 +727,10 @@
               </form>
               <aside className="summary" aria-label="Sipariş özeti">
                 <h2>Özet</h2>
-                {items.map(p => <div key={p.id} className="line"><span>{p.title}</span><span>{formatPrice(p.original.price)}</span></div>)}
+                {items.map(i => <div key={i.productId} className="line"><span>{i.productName}{i.qty > 1 ? ` × ${i.qty}` : ""}</span><span>{formatPrice(i.price * i.qty)}</span></div>)}
                 <div className="line"><span>Kargo</span><span>Onayda bildirilir</span></div>
                 <div className="line total"><span>Toplam</span><span>{formatPrice(total)}</span></div>
+                {hasMagnet && <p className="demo-small">{MAGNET_DEMO_NOTE}</p>}
               </aside>
             </div>
           </div>
@@ -747,6 +828,36 @@
       );
     }
 
+    // ---- MagnetsPage: tüm eserlerin demo magnetleri; kart, eser sayfasındaki magnet kutusuna gider ----
+    function MagnetCard({ product }) {
+      const stock = magnetStock(product.id);
+      return (
+        <a className="work" href={`#/eser/${product.id}/magnet`} data-product-id={magnetId(product.id)}>
+          <div className="imgbox"><ProductImage {...product.image} src={product.image.thumb} /></div>
+          <div className="work-text">
+            <b>{product.title}</b>
+            <small>Magnet · {MAGNET.prepDays} iş günü içinde hazırlanır</small>
+            {stock === 0 ? <span className="sold">Tükendi</span> : <span className="price">{formatPrice(MAGNET.price)}</span>}
+          </div>
+        </a>
+      );
+    }
+    function MagnetsPage() {
+      useEffect(() => { document.title = "Magnetler — ONT Art Gallery"; }, []);
+      const soldOut = PRODUCTS.filter(p => magnetStock(p.id) === 0).length;
+      return (
+        <section className="page catalog-page">
+          <div className="wide">
+            <h1 className="h2">Magnetler</h1>
+            <p className="page-lede">Her eserin buzdolabı magneti · {formatPrice(MAGNET.price)} · {MAGNET.prepDays} iş günü içinde hazırlanır · siparişte en fazla {MAGNET.maxPerOrder} adet</p>
+            <p className="demo-banner"><b>Demo</b> {MAGNET_DEMO_NOTE}</p>
+            <p className="count" role="status">{PRODUCTS.length} magnet · {soldOut} tanesi tükendi</p>
+            <div className="works">{PRODUCTS.map(p => <MagnetCard key={p.id} product={p} />)}</div>
+          </div>
+        </section>
+      );
+    }
+
     // ---- PrivacyPage: KVKK aydınlatma metni (taslak; gerçek yayın öncesi hukukçu onayı gerekir) ----
     function PrivacyPage() {
       useEffect(() => { document.title = "Gizlilik ve KVKK Aydınlatma Metni — ONT Art Gallery"; }, []);
@@ -796,7 +907,7 @@
 
     // ---- App: yönlendirme ve sepet ----
     function App() {
-      const { page, id } = useRoute();
+      const { page, id, sub } = useRoute();
       const cart = useCart();
       useEffect(() => {
         document.body.classList.toggle("is-home", page === "");
@@ -805,7 +916,8 @@
 
       let view;
       if (page === "") view = <HomePage />;
-      else if (page === "eser") view = <ProductPage id={id} cart={cart} />;
+      else if (page === "eser") view = <ProductPage id={id} sub={sub} cart={cart} />;
+      else if (page === "magnetler") view = <MagnetsPage />;
       else if (page === "sanatci") view = <ArtistPage />;
       else if (page === "iletisim") view = <ContactPage />;
       else if (page === "sepet") view = <CartPage cart={cart} />;
@@ -816,7 +928,7 @@
 
       return (
         <>
-          <Header page={page} cartCount={cart.ids.length} />
+          <Header page={page} cartCount={cart.count} />
           <main>{view}</main>
           <footer className="site-footer">
             <div className="wide">

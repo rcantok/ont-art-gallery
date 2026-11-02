@@ -6,6 +6,7 @@
     "node": "24.x"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "dev": "node scripts/dev-server.mjs"
   }
 }

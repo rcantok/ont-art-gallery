@@ -34,13 +34,13 @@ const post = (handler, body, ip = newIp()) => handler(new Request("http://localh
   body: typeof body === "string" ? body : JSON.stringify(body)
 }));
 
-const validOrder = { name: "Ali Veli", phone: "0532 123 45 67", email: "ali@gmail.com", address: "Moda Cd. 1, Kadıköy", consent: true, items: ["ont-092"] };
+const validOrder = { name: "Ali Veli", phone: "0532 123 45 67", email: "ali@gmail.com", address: "Moda Cd. 1, Kadıköy", consent: true, items: [{ productId: "ont-092", quantity: 1 }] };
 
 test("geçerli sipariş: fiyat ve toplam sunucuda katalogdan hesaplanır, gizli anahtar başlıkta gider", async () => {
   received.length = 0;
-  const res = await post(order, { ...validOrder, total: 1, price: 1, items: ["ont-092", "ont-001"] });
+  const res = await post(order, { ...validOrder, total: 1, price: 1, items: [{ productId: "ont-092", quantity: 1 }, { productId: "ont-001", quantity: 1 }] });
   assert.equal(res.status, 200);
-  assert.deepEqual(await res.json(), { ok: true, order: { productName: "Beyaz Elbiseli Kadın, Sazlıklı Göl", total: 95000, email: "ali@gmail.com" } });
+  assert.deepEqual(await res.json(), { ok: true, order: { productName: "Beyaz Elbiseli Kadın, Sazlıklı Göl", total: 95000, email: "ali@gmail.com", demo: false } });
   assert.equal(received.length, 1);
   const { headers, body } = received[0];
   assert.equal(headers["x-ont-secret"], "test-gizli");
@@ -68,9 +68,16 @@ for (const [label, patch, field] of [
 
 for (const [label, items, status] of [
   ["boş sepet", [], 400],
-  ["aynı eser iki kez", ["ont-001", "ont-001"], 400],
-  ["olmayan eser", ["ont-999"], 409],
-  ["sepet dizi değil", "ont-001", 400]
+  ["aynı eser iki kez", [{ productId: "ont-001", quantity: 1 }, { productId: "ont-001", quantity: 1 }], 400],
+  ["olmayan eser", [{ productId: "ont-999", quantity: 1 }], 409],
+  ["sepet dizi değil", "ont-001", 400],
+  ["eski biçim (yalnız kimlik)", ["ont-001"], 400],
+  ["adet tam sayı değil", [{ productId: "mag-ont-001", quantity: 1.5 }], 400],
+  ["orijinalden 2 adet", [{ productId: "ont-001", quantity: 2 }], 400],
+  ["magnetten 3 adet (sınır 2)", [{ productId: "mag-ont-001", quantity: 3 }], 400],
+  ["magnet 0 adet", [{ productId: "mag-ont-001", quantity: 0 }], 400],
+  ["tükenmiş magnet", [{ productId: "mag-ont-092", quantity: 1 }], 409],
+  ["olmayan eserin magneti", [{ productId: "mag-ont-999", quantity: 1 }], 409]
 ]) {
   test(`sepet: ${label} → ${status}`, async () => {
     received.length = 0;
@@ -187,4 +194,48 @@ test("temizlik: HTML işaretleri ve satır sonları fişe girmez", async () => {
   assert.doesNotMatch(b.name + b.address, /[<>\n]/);
   assert.equal(b.name, "Ali scriptalert(1)/script Veli");
   assert.equal(b.address, "Moda Cd. 1 Kadıköy bİstanbul/b");
+});
+
+test("magnet: 2 adet sipariş → toplam 2.000 TL, kalem türü ve hazırlanma süresi fişte, demo işaretli", async () => {
+  received.length = 0;
+  const res = await post(order, { ...validOrder, items: [{ productId: "mag-ont-001", quantity: 2 }] });
+  assert.equal(res.status, 200);
+  const b = received[0].body;
+  assert.equal(b.total, 2000);
+  assert.equal(b.quantity, 2);
+  assert.equal(b.demo, true);
+  assert.deepEqual(b.items, [{ productId: "mag-ont-001", productName: "Sazlıklı Göl — Magnet", kind: "magnet", price: 1000, quantity: 2, prepDays: 3 }]);
+});
+
+test("karışık sepet: orijinal + magnet → toplam ve adet doğru, magnet fiyatı tarayıcıdan alınmaz", async () => {
+  received.length = 0;
+  const res = await post(order, { ...validOrder, items: [{ productId: "ont-001", quantity: 1 }, { productId: "mag-ont-065", quantity: 1, price: 1 }] });
+  assert.equal(res.status, 200);
+  const b = received[0].body;
+  assert.equal(b.total, 20000 + 1000);
+  assert.equal(b.quantity, 2);
+  assert.equal(b.productName, "Sazlıklı Göl, Lavanta Tarlası — Magnet");
+});
+
+test("orijinal siparişte demo false, kalem türü original", async () => {
+  received.length = 0;
+  await post(order, validOrder);
+  assert.equal(received[0].body.demo, false);
+  assert.equal(received[0].body.items[0].kind, "original");
+  assert.equal(received[0].body.items[0].prepDays, null);
+});
+
+test("stok bildirimi: tükenmiş magnet → 200, item restock", async () => {
+  received.length = 0;
+  const res = await post(notify, { name: "Ece Deneme", email: "ece@ornek.com", consent: true, productId: "mag-ont-092" });
+  assert.equal(res.status, 200);
+  assert.equal(received[0].body.item, "restock");
+  assert.equal(received[0].body.productName, "Beyaz Elbiseli Kadın — Magnet");
+});
+
+test("stok bildirimi: stokta olan magnet için istenemez → 400", async () => {
+  received.length = 0;
+  const res = await post(notify, { name: "Ece Deneme", email: "ece@ornek.com", consent: true, productId: "mag-ont-001" });
+  assert.equal(res.status, 400);
+  assert.equal(received.length, 0);
 });

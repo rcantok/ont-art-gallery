@@ -14,3 +14,9 @@ CLAUDE.md
 GUVENLIK.md
 .claude/
 tests/
+
+# Mobil uygulama (Expo) web yayınının parçası değil
+mobile/
+
+# Yerel geliştirme araçları
+scripts/

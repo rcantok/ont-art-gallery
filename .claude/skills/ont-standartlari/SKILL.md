@@ -36,7 +36,7 @@ Headless Chrome ile ekran görüntüsü al ve konsolu oku (Babel uyarısı dış
 
 ## Webhook formatı
 
-Site çok sayfalı bir mağazadır (hash yönlendirme: `#/`, `#/eser/<id>`, `#/sanatci`, `#/iletisim`, `#/sepet`, `#/siparis`, `#/hesap`, `#/gizlilik`). Tarayıcı form alanlarını ve eser kimliklerini sitenin kendi API'sine yollar (`postForm` → `/api/order`, `/api/notify`). Sunucu alanları `lib/validate.js` ile yeniden doğrular, fişi `PRODUCTS`'tan kurar ve `WEBHOOK_URL`'ye tek bir JSON nesnesi olarak iletir (`forwardToWebhook`, `X-ONT-Secret` başlığıyla). Baskı satışı yoktur; her eser tek orijinaldir.
+Site çok sayfalı bir mağazadır (hash yönlendirme: `#/`, `#/eser/<id>`, `#/sanatci`, `#/iletisim`, `#/sepet`, `#/siparis`, `#/hesap`, `#/gizlilik`). Tarayıcı form alanlarını ve sepet kalemlerini (`items: [{ productId, quantity }]`) sitenin kendi API'sine yollar (`postForm` → `/api/order`, `/api/notify`). Sunucu alanları `lib/validate.js` ile yeniden doğrular, fişi `lib/catalog.js` (`resolveItem`) ile katalogdan kurar ve `WEBHOOK_URL`'ye tek bir JSON nesnesi olarak iletir (`forwardToWebhook`, `X-ONT-Secret` başlığıyla). Baskı satışı yoktur. Ürün iki türdür: orijinal eser (`ont-001`, tek adet) ve demo magnet (`mag-ont-001`, 1.000 TL, stok 2, siparişte en fazla 2).
 
 ### Sipariş — `event: "order"` (Sipariş sayfası, sepetin tamamı)
 
@@ -44,14 +44,15 @@ Site çok sayfalı bir mağazadır (hash yönlendirme: `#/`, `#/eser/<id>`, `#/s
 {
   "event": "order",
   "name": "Deniz Test",
-  "productId": "ont-001,ont-064",
-  "productName": "Sazlıklı Göl, Kızıl Liman",
+  "productId": "mag-ont-001,ont-001",
+  "productName": "Sazlıklı Göl — Magnet, Sazlıklı Göl",
   "items": [
-    { "productId": "ont-001", "productName": "Sazlıklı Göl", "price": 8000 },
-    { "productId": "ont-064", "productName": "Kızıl Liman", "price": 12500 }
+    { "productId": "mag-ont-001", "productName": "Sazlıklı Göl — Magnet", "kind": "magnet", "price": 1000, "quantity": 2, "prepDays": 3 },
+    { "productId": "ont-001", "productName": "Sazlıklı Göl", "kind": "original", "price": 20000, "quantity": 1, "prepDays": null }
   ],
-  "quantity": 2,
-  "total": 20500,
+  "quantity": 3,
+  "total": 22000,
+  "demo": true,
   "phone": "+90 555 000 00 00",
   "email": "deniz.test@ornek.com",
   "address": "Işık Mah. Deneme Sok. No: 3 D: 4, Kadıköy / İstanbul",
@@ -79,14 +80,15 @@ Site çok sayfalı bir mağazadır (hash yönlendirme: `#/`, `#/eser/<id>`, `#/s
 | Alan | Kural |
 |---|---|
 | `productId` / `productName` | Ödev sözleşmesi tek eser bekler; sepet birden çok eser taşıdığı için virgülle birleştirilmiş kimlik/ad. Ayrıntı `items`'ta |
-| `items` | Her eser: `productId` (= `id`), `productName` (= `title`), `price` (sayı, TL) — hepsi `PRODUCTS`'tan, formdan alınmaz |
-| `quantity` | Eser sayısı (her orijinal tek adet; sepete bir eser en fazla bir kez girer) |
-| `total` | `items` fiyatlarının toplamı, sayı. Kargo dahil değil (onayda bildirilir) |
+| `items` | Her kalem: `productId`, `productName`, `kind` (`original` / `magnet`), `price` (birim, TL), `quantity`, `prepDays` (magnette iş günü, orijinalde `null`) — ad/fiyat/sınır `lib/catalog.js`'ten, formdan alınmaz |
+| `quantity` | Toplam adet (kalem adetlerinin toplamı). Orijinal 1; magnet 1–2 ve stoktan fazla olamaz (aşılırsa 400, tükenmişse 409) |
+| `total` | Σ fiyat × adet, sayı. Kargo dahil değil (onayda bildirilir) |
+| `demo` | Sepette magnet varsa `true` (magnetler demo: gönderim yapılmaz) |
 | `name`, `email`, `phone`, `address` | Formdan, zorunlu, baş/son boşluk kırpılır. `phone` ve `address` yalnızca siparişte |
 | `payment` | Sabit `"card-demo"` (yalnızca siparişte) |
 | `consent` | KVKK açık rıza; her iki olayda sabit `true` (sunucu, formdaki rıza kutusu işaretli değilse isteği reddeder) |
 | `consentAt` | Rızanın alındığı an, ISO 8601; sunucu ekler |
-| `item` | Yalnızca `stock_notify`'da, sabit `"similar"` |
+| `item` | Yalnızca `stock_notify`'da: tükenmiş magnet için `"restock"` (`productId: "mag-…"`, ad "… — Magnet"), satılmış orijinal için `"similar"`. Diğer ürünlerde istek 400 |
 | `source` | Sabit `"ont-art-gallery"` |
 
 ### Ödeme formu bir demodur — kart verisi asla gönderilmez

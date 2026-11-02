@@ -1340,3 +1340,11 @@ export const PRODUCTS = [
     original: { price: 31000, status: "available" }
   }
 ];
+
+// ==== MAGNETLER (DEMO) ====
+// Her eserin buzdolabı magneti. Demo ürünüdür: sipariş alınır, gönderim yapılmaz (sitede belirtilir).
+// Stok elle tutulur ve siparişle kendiliğinden düşmez (veritabanı yok; kayıt Hafta 3'te n8n/Sheets'te).
+// Kimlik: "mag-" + eser kimliği (ör. mag-ont-001). prepDays: hazırlanma süresi (iş günü), AI'ya tahmin ettirilmez.
+export const MAGNET = { price: 1000, prepDays: 3, stock: 2, maxPerOrder: 2 };
+// Tükenmiş görünen magnetler (stok 0): "Stok gelince haber ver" formu bunlarda çıkar
+export const MAGNET_SOLD_OUT = ["ont-003", "ont-009", "ont-028", "ont-064", "ont-092", "ont-093"];
