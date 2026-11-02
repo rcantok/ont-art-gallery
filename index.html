@@ -129,7 +129,21 @@
     .prose ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
     .prose .muted { color: var(--muted); font-size: 14px; }
     .prose .draft { background: var(--soft); border-left: 3px solid var(--accent); padding: 16px 18px; font-size: 14px; }
-    .magnet-box { margin-top: 28px; padding: 20px; background: var(--soft); display: flex; flex-direction: column; gap: 12px; }
+    /* Magnet görünümü: buzdolabı kapağı zemininde yuvarlak köşeli, beyaz baskı kenarlı, parlak magnet; eser kırpılmaz */
+    .fridge { position: relative; width: 100%; aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center; overflow: hidden;
+      background: linear-gradient(100deg, var(--soft) 0%, #fff 36%, var(--soft) 54%, var(--matte) 100%); }
+    .fridge.square { aspect-ratio: 1; }
+    .magnet { position: relative; border: 4px solid #fff; border-radius: 10px; background: #fff; transform: rotate(var(--tilt, 0deg)); transition: transform .4s ease;
+      box-shadow: 0 1px 0 rgba(0,0,0,.10), 0 2px 3px rgba(0,0,0,.14), 0 12px 20px -8px rgba(0,0,0,.30); }
+    .magnet img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+    .magnet::after { content: ""; position: absolute; inset: 0; border-radius: 6px; pointer-events: none;
+      background: linear-gradient(135deg, rgba(255,255,255,.42) 0%, rgba(255,255,255,.10) 32%, rgba(255,255,255,0) 50%); }
+    .fridge.square .magnet { border-width: 2px; border-radius: 5px; }
+    .fridge.square .magnet img, .fridge.square .magnet::after { border-radius: 3px; }
+    .work:hover .magnet { transform: rotate(0deg) translateY(-3px); }
+    .magnet-box { margin-top: 28px; padding: 20px; background: var(--soft); display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .magnet-info { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+    @media (max-width: 520px) { .magnet-box { grid-template-columns: 1fr; } .magnet-preview { max-width: 180px; } }
     .magnet-box h2 { font-family: 'Archivo', sans-serif; font-size: 18px; margin: 0; }
     .magnet-box .meta { margin: 0; }
     .magnet-box .notify { margin-top: 4px; }
@@ -161,6 +175,7 @@
     .cart-item .art img { padding: 6%; }
     .cart-item b { font-family: 'Archivo', sans-serif; font-size: 17px; }
     .cart-item small { display: block; color: var(--muted); margin-top: 4px; }
+    .cart-item .qty { margin: 8px 16px 0 0; }
     .cart-item .price { font-weight: 700; text-align: right; }
     .summary { background: var(--soft); padding: 24px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 96px; }
     .summary h2 { margin: 0 0 4px; font-size: 20px; }
@@ -210,7 +225,7 @@
       .cart-item { grid-template-columns: 72px 1fr; }
       .cart-item .price { grid-column: 2; text-align: left; }
     }
-    @media (prefers-reduced-motion: reduce) { .slide, .art { transition: none; } }
+    @media (prefers-reduced-motion: reduce) { .slide, .art, .magnet { transition: none; } }
   </style>
 </head>
 <body>
@@ -526,6 +541,22 @@
       </label>
     );
 
+    // ---- MagnetImage: eseri buzdolabı kapağındaki bir magnet gibi gösterir (kırpmadan, kendi oranıyla) ----
+    // Eğiklik eser kimliğinden türetilir: aynı magnet her seferinde aynı açıyla durur.
+    const tiltOf = id => ([...id].reduce((s, c) => s + c.charCodeAt(0), 0) % 7 - 3) * 0.8;
+    function MagnetImage({ product, square }) {
+      const { thumb, alt, width, height } = product.image;
+      const frame = square ? 1 : 0.8, fill = square ? 0.8 : 0.72;
+      const w = Math.min(fill, fill * (width / height) / frame) * 100;
+      return (
+        <div className={`fridge${square ? " square" : ""}`}>
+          <div className="magnet" style={{ width: `${w}%`, aspectRatio: `${width} / ${height}`, "--tilt": `${tiltOf(product.id)}deg` }}>
+            <img src={thumb} alt={`${alt} (magnet görünümü)`} width={width} height={height} loading="lazy" />
+          </div>
+        </div>
+      );
+    }
+
     // ---- MagnetBox: eser sayfasında eserin demo magneti (stok, adet, sepete ekle ya da stok bildirimi) ----
     function MagnetBox({ product, cart }) {
       const id = magnetId(product.id);
@@ -534,6 +565,8 @@
       const [qty, setQty] = useState(1);
       return (
         <div className="magnet-box" id="magnet">
+          <div className="magnet-preview"><MagnetImage product={product} /></div>
+          <div className="magnet-info">
           <span className="demo-tag">Demo</span>
           <h2>Buzdolabı magneti</h2>
           <p className="meta">{product.title} · {MAGNET.prepDays} iş günü içinde hazırlanır</p>
@@ -549,6 +582,7 @@
             </div>
           )}
           <p className="demo-small">{MAGNET_DEMO_NOTE}</p>
+          </div>
         </div>
       );
     }
@@ -626,7 +660,7 @@
                 <ul className="cart-list">
                   {cart.items.map(i => (
                     <li key={i.productId} className="cart-item">
-                      <a href={itemHref(i)}><ProductImage {...i.product.image} src={i.product.image.thumb} /></a>
+                      <a href={itemHref(i)}>{i.kind === "magnet" ? <MagnetImage product={i.product} square /> : <ProductImage {...i.product.image} src={i.product.image.thumb} />}</a>
                       <div>
                         <a href={itemHref(i)}><b>{i.productName}</b></a>
                         <small>{i.kind === "magnet" ? `Magnet (demo) · ${MAGNET.prepDays} iş günü içinde hazırlanır` : `${metaLine(i.product)} · Orijinal`}</small>
@@ -833,7 +867,7 @@
       const stock = magnetStock(product.id);
       return (
         <a className="work" href={`#/eser/${product.id}/magnet`} data-product-id={magnetId(product.id)}>
-          <div className="imgbox"><ProductImage {...product.image} src={product.image.thumb} /></div>
+          <div className="imgbox"><MagnetImage product={product} /></div>
           <div className="work-text">
             <b>{product.title}</b>
             <small>Magnet · {MAGNET.prepDays} iş günü içinde hazırlanır</small>
