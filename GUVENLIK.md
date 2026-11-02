@@ -12,10 +12,10 @@ Durum: ✅ tamam · 🔶 kısmen / yayında doğrulanacak · ❌ yapılmadı
 | 1 | `.env` dosyası `.gitignore`'da | ✅ | `.gitignore` → `.env*` (yalnızca `!.env.example` hariç). `git check-ignore -v .env.local` → `.gitignore:13:.env*`. Git'te takip edilen tek env dosyası değersiz şablon `.env.example`. `.vercelignore` da `.env*`'i Vercel yüklemesinden dışlıyor. |
 | 2 | Tüm secret'lar Vercel Environment Variables'ta (kodda değil) | ✅ | `WEBHOOK_URL` ve `WEBHOOK_SECRET` yalnızca `process.env`'den okunuyor (`lib/server.js`). `vercel env ls`: Production ve Preview değerleri **Secret / Hidden**, Development ayrı. Production için ayrı webhook adresi ve anahtar. Sayfa kaynağında webhook adresi yok (canlı preview'da kontrol edildi). |
 | 3 | Gönder butonu çift gönderime kapalı | ✅ | Gönderim sürerken düğme pasif ve "Gönderiliyor…" yazıyor. Ayrıca `useSubmitLock`: düğme pasifleşmeden önceki kısa anda gelen tıklamaları da durduruyor. Tarayıcı testi: art arda 3 gönderim → sunucuya **1 istek**. |
-| 4 | HTTPS ve güvenlik başlıkları (`vercel.json`) tanımlı | 🔶 | `vercel.json` tanımlı (aşağıdaki ek madde). Vercel HTTPS'i zorunlu kılıyor. Başlıklar yerelde aynı değerlerle sunularak test edildi; site bozulmadı, çerçeveleme engellendi. **Kalan:** canlı Vercel adresinde `curl -I` ile kontrol, production yayınında yapılacak. |
+| 4 | HTTPS ve güvenlik başlıkları (`vercel.json`) tanımlı | ✅ | `vercel.json` tanımlı (aşağıdaki ek madde). Vercel HTTPS'i zorunlu kılıyor. 2026-11-02: production'da `curl -I https://ont-art-gallery.vercel.app/` → 6 başlığın hepsi geliyor; yerel testte site bozulmadı, çerçeveleme engellendi. |
 | 5 | `npm audit` temiz (ya da kalan risk belgelenmiş) | ✅ | `npm audit` → **found 0 vulnerabilities**. Projenin hiç npm bağımlılığı yok (`package-lock.json` yalnızca audit için). Kalan risk: CDN'den yüklenen betikler npm audit kapsamında değil; aşağıda "Kalan riskler"de. |
 | 6 | Form girdileri sanitize ediliyor | ✅ | Sunucu, tarayıcıdan bağımsız olarak doğruluyor (`lib/validate.js`): yalnızca metin tipi, uzunluk sınırları, e-posta/telefon biçimi, boş/boşluk reddi. `cleanText`: `<`, `>` ve kontrol karakterleri fişe girmeden temizleniyor. Ekrana yazarken React kaçışlıyor; `innerHTML`/`dangerouslySetInnerHTML` yok. 25 otomatik test (`npm test`) bunları kapsıyor. |
-| 7 | KVKK rıza checkbox'ı ve Privacy Policy yayında | 🔶 | Sipariş ve "Benzerini haber ver" formlarında zorunlu açık rıza kutusu; sunucu da zorunlu tutuyor (rıza yoksa 400), fişe `consent` + `consentAt` yazılıyor. `#/gizlilik` sayfasında KVKK aydınlatma metni. **Kalan:** (a) production'a yayınlanınca "yayında" olacak, (b) metin taslak; gerçek satıştan önce hukukçu onayı ve eksik bilgiler (unvan, adres, kargo firması, saklama süreleri) gerekli. |
+| 7 | KVKK rıza checkbox'ı ve Privacy Policy yayında | ✅ | 2026-11-02'den beri production'da. Sipariş ve stok bildirimi formlarında zorunlu açık rıza kutusu; sunucu da zorunlu tutuyor (canlıda rızasız sipariş → 400), fişe `consent` + `consentAt` yazılıyor. `#/gizlilik` sayfasında KVKK aydınlatma metni. **Not:** metin taslak; gerçek satıştan önce hukukçu onayı ve eksik bilgiler (unvan, adres, kargo firması, saklama süreleri) gerekli. |
 | 8 | Claude denetimi (`/security-review`) ve Strix taraması: kritik bulgu yok | 🔶 | `/security-review` (Hafta 2'nin 7 commit'i): **yüksek güvenli açık bulunmadı.** Strix taraması **çalıştırılamadı**: ChatGPT aboneliğiyle giriş başarılı oldu ama OpenAI denenen her modeli ("not supported when using Codex with a ChatGPT account") reddetti. Bir API anahtarıyla (OpenRouter vb.) yeniden denenecek. |
 
 ## Ek maddeler
@@ -44,7 +44,8 @@ Durum: ✅ tamam · 🔶 kısmen / yayında doğrulanacak · ❌ yapılmadı
 4. **Eski webhook adresi git geçmişinde.** Kullanılmıyor; geçmişi yeniden yazmak yerine adres terk edildi.
 5. **KVKK metni taslak.** Hukukçu onayı olmadan gerçek satışa açılmamalı.
 6. **Strix taraması yapılmadı.** Madde 8.
-7. **Canlı başlık kontrolü bekliyor.** Production yayınından sonra `curl -I https://ont-art-gallery.vercel.app/` ile başlıklar doğrulanacak.
+7. **Webhook.site geçici.** Ücretsiz adresler birkaç günde siliniyor (2026-11-02'de silinmiş bulundu, yenilendi). Kalıcı çözüm Hafta 3'te n8n Production webhook'u.
+8. **Mobil (Expo) araç zincirinde `npm audit` uyarıları** (22: 7 orta, 15 yüksek) — yalnızca geliştirme/derleme araçlarında, uygulamanın kendisinde değil; `--force` Expo'yu bozduğu için SDK güncellemeleriyle kapanmasını bekliyoruz.
 
 ## Yeniden doğrulama komutları
 
