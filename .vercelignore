@@ -20,3 +20,6 @@ mobile/
 
 # Yerel geliştirme araçları
 scripts/
+
+# n8n workflow yedeği (repoda kalır, sitede yayınlanmaz)
+n8n/

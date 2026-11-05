@@ -1,0 +1,691 @@
+{
+  "name": "ONT → Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ont",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "ONT Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "ont"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.headers['x-ont-secret'] }}",
+              "rightValue": "WEBHOOK_SECRET_BURAYA",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "leftValue": "={{ $json.headers['x-ont-secret'] }}",
+              "rightValue": "PROD_SECRET_BURAYA",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "name": "Secret doğru mu?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "order",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "order"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "stock_notify",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "stock_notify"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "name": "Olay türü",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        440,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "SHEET_URL_BURAYA",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Siparisler",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "consentAt": "={{ $json.body.consentAt }}",
+            "name": "={{ $json.body.name }}",
+            "email": "={{ $json.body.email }}",
+            "phone": "={{ $json.body.phone }}",
+            "address": "={{ $json.body.address }}",
+            "productId": "={{ $json.body.productId }}",
+            "productName": "={{ $json.body.productName }}",
+            "quantity": "={{ $json.body.quantity }}",
+            "total": "={{ $json.body.total }}",
+            "demo": "={{ $json.body.demo }}",
+            "payment": "={{ $json.body.payment }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "consentAt",
+              "displayName": "consentAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "productId",
+              "displayName": "productId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "productName",
+              "displayName": "productName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quantity",
+              "displayName": "quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total",
+              "displayName": "total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "demo",
+              "displayName": "demo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payment",
+              "displayName": "payment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Siparisler'e ekle",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        700,
+        -260
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "lMRvyORsgRRBsuuu",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"ok\": true}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "name": "200 sipariş kaydedildi",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        940,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sipariş fişinden AI'ya gidecek bilgiyi kurar.\n// Hazırlanma süresi AI'ya tahmin ettirilmez: katalogdaki prepDays'ten gelir (magnet 3 iş günü, orijinalde belli değil).\nconst b = $('ONT Webhook').first().json.body;\nconst items = Array.isArray(b.items) ? b.items : [];\nconst satirlar = items.map(i => {\n  const tur = i.kind === 'magnet' ? 'buzdolabı magneti (DEMO ürün: sipariş alınır, gönderim yapılmaz)' : 'orijinal eser';\n  const sure = i.prepDays ? `${i.prepDays} iş günü içinde hazırlanır` : 'hazırlanma ve kargo süresi sipariş onayında bildirilir';\n  return `- ${i.productName} — ${tur}, ${i.quantity} adet — ${sure}`;\n});\nreturn [{ json: {\n  to: b.email,\n  name: b.name,\n  urunler: satirlar.join('\\n') || '- (ürün bilgisi yok)',\n  demo: !!b.demo,\n} }];"
+      },
+      "name": "Mail bilgisi hazırla",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sen ONT Art Gallery adına yazan bir galeri asistanısın. Galeri, ressam Osman Nihat Tok'un özgün resimlerini satıyor.\nAşağıdaki sipariş için müşteriye bir teşekkür maili yaz.\n\nKurallar:\n- Türkçe, \"siz\" diliyle; sade, sıcak ve saygılı bir galeri tonu. En fazla 120 kelime.\n- Müşteriye adıyla hitap et ve aldığı eserleri adlarıyla an.\n- Hazırlanma süresini YALNIZCA aşağıdaki ürün satırlarında yazan bilgiden aktar. Süre, kargo ya da teslim tarihi tahmin etme veya uydurma.\n- Listede DEMO ürün varsa bunun bir demo sipariş olduğunu ve gönderim yapılmayacağını tek cümleyle belirt.\n- İndirim, kampanya dili ve emoji kullanma. Fiyat ve ödeme bilgisi yazma.\n- \"ONT Art Gallery\" imzasıyla bitir.\n\nYalnızca şu JSON'u döndür, başka hiçbir şey yazma:\n{\"subject\": \"...\", \"body\": \"...\"}\n\nSipariş:\nMüşteri: {{ $json.name }}\nÜrünler:\n{{ $json.urunler }}"
+      },
+      "name": "Mail metni yaz (AI)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1420,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "model": "deepseek-chat",
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "name": "DeepSeek Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        -60
+      ],
+      "credentials": {
+        "deepSeekApi": {
+          "id": "u05CTqwWT3XyPN6m",
+          "name": "DeepSeek - Bootcamp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// AI çıktısını {subject, body} JSON'una çevirir; model ```json ile sararsa da okur.\nconst raw = $input.first().json.text ?? '';\nconst m = raw.match(/\\{[\\s\\S]*\\}/);\nlet mail;\ntry { mail = JSON.parse(m[0]); } catch (e) { throw new Error('AI çıktısı JSON değil: ' + raw.slice(0, 300)); }\nconst info = $('Mail bilgisi hazırla').first().json;\nreturn [{ json: { to: info.to, subject: mail.subject, body: mail.body, model: 'deepseek-chat' } }];"
+      },
+      "name": "Mail taslağı",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "SHEET_URL_BURAYA",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Bildirimler",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "consentAt": "={{ $json.body.consentAt }}",
+            "name": "={{ $json.body.name }}",
+            "email": "={{ $json.body.email }}",
+            "productId": "={{ $json.body.productId }}",
+            "productName": "={{ $json.body.productName }}",
+            "item": "={{ $json.body.item }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "consentAt",
+              "displayName": "consentAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "productId",
+              "displayName": "productId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "productName",
+              "displayName": "productName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "item",
+              "displayName": "item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Bildirimler'e ekle",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        700,
+        -60
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "lMRvyORsgRRBsuuu",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"ok\": true}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "name": "200 bildirim kaydedildi",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        940,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\": \"unknown event\"}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "name": "400 bilinmeyen olay",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        700,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\": \"unauthorized\"}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "name": "401 yetkisiz",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.to || '').trim().toLowerCase() }}",
+              "rightValue": "IZINLI_ADRES_BURAYA",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "name": "İzinli adres mi?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1960,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.body }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "ONT Art Gallery"
+        }
+      },
+      "name": "Gmail: teşekkür gönder",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2200,
+        -280
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "C45hsmn4HasLnsc7",
+          "name": "Gmail - Bootcamp"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "ONT Webhook": {
+      "main": [
+        [
+          {
+            "node": "Secret doğru mu?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Secret doğru mu?": {
+      "main": [
+        [
+          {
+            "node": "Olay türü",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "401 yetkisiz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Olay türü": {
+      "main": [
+        [
+          {
+            "node": "Siparisler'e ekle",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bildirimler'e ekle",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "400 bilinmeyen olay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Siparisler'e ekle": {
+      "main": [
+        [
+          {
+            "node": "200 sipariş kaydedildi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "200 sipariş kaydedildi": {
+      "main": [
+        [
+          {
+            "node": "Mail bilgisi hazırla",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mail bilgisi hazırla": {
+      "main": [
+        [
+          {
+            "node": "Mail metni yaz (AI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mail metni yaz (AI)": {
+      "main": [
+        [
+          {
+            "node": "Mail taslağı",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Mail metni yaz (AI)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bildirimler'e ekle": {
+      "main": [
+        [
+          {
+            "node": "200 bildirim kaydedildi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mail taslağı": {
+      "main": [
+        [
+          {
+            "node": "İzinli adres mi?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "İzinli adres mi?": {
+      "main": [
+        [
+          {
+            "node": "Gmail: teşekkür gönder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  }
+}
