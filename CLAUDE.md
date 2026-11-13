@@ -6,7 +6,7 @@ Ressam **Osman Nihat Tok**'un (proje sahibinin babası; ONT baş harfleri) eserl
 
 - Klasör `~/Desktop/AtölyeKart` (2026-11-13'e kadar `~/Desktop/Bizcard/AtölyeKart` idi; BizCard ayrı bir projedir, ona dokunulmaz).
 - BizCard ile **ortak** olan tek şey altyapı: laptoptaki n8n (Docker `n8n-bootcamp`, compose `~/Desktop/n8n-bootcamp`), Cloudflare tüneli (`n8n-tunnel`) ve n8n credential'ları. Tünel düşerse iki proje birden etkilenir; tünel adımları BizCard'ın CLAUDE.md'sinde.
-- Ödev belgeleri (Hafta 1–4 PDF'leri, raporlar, n8n lab PDF'i) `belgeler/` altında; git ve Vercel dışında.
+- Ödev belgeleri (ödev PDF'leri, haftalık raporlar, kanıt ekran görüntüleri) projede değil, `~/Desktop/miuul training/AtölyeKart ödevleri/` klasöründe; n8n lab PDF'i `~/Desktop/miuul training/`. Yeni ödev belgesi de oraya konur (`belgeler/` yine de git ve Vercel dışında tutulur).
 
 ## İş bağlamı
 
