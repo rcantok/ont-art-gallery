@@ -2,6 +2,12 @@
 
 Ressam **Osman Nihat Tok**'un (proje sahibinin babası; ONT baş harfleri) eserlerini satan galeri sitesi. Kursun "AtölyeKart" ödev serisi için yapılıyor, ama gerçek satışta kullanılacak şekilde: gerçek eserler geldiğinde yalnızca veri değişmeli, yapı değil.
 
+## Ortam
+
+- Klasör `~/Desktop/AtölyeKart` (2026-11-13'e kadar `~/Desktop/Bizcard/AtölyeKart` idi; BizCard ayrı bir projedir, ona dokunulmaz).
+- BizCard ile **ortak** olan tek şey altyapı: laptoptaki n8n (Docker `n8n-bootcamp`, compose `~/Desktop/n8n-bootcamp`), Cloudflare tüneli (`n8n-tunnel`) ve n8n credential'ları. Tünel düşerse iki proje birden etkilenir; tünel adımları BizCard'ın CLAUDE.md'sinde.
+- Ödev belgeleri (ödev PDF'leri, haftalık raporlar, kanıt ekran görüntüleri) projede değil, `~/Desktop/miuul training/AtölyeKart ödevleri/` klasöründe; n8n lab PDF'i `~/Desktop/miuul training/`. Yeni ödev belgesi de oraya konur (`belgeler/` yine de git ve Vercel dışında tutulur).
+
 ## İş bağlamı
 
 - **Sektör:** Özgün resim satışı.
@@ -96,10 +102,11 @@ Hafta 2 ödevi: deploy, secret, sunucu tarafı doğrulama, rate limit, KVKK, Exp
 
 Ödev metni: `~/Downloads/Odev_AtolyeKart_Hafta3.docx` (3.1 webhook → Sheet, 3.2 AI teşekkür + hazırlanma süresi maili).
 
-- **Workflow** `n8n/ont-sheets-workflow.json` (n8n'de "ONT → Google Sheets", Published, path `ont`). Repodaki dosyada anahtarlar ve izinli e-posta yer tutucudur (`WEBHOOK_SECRET_BURAYA`, `PROD_SECRET_BURAYA`, `IZINLI_ADRES_BURAYA`); gerçek değerler yalnızca n8n'de. Akış: Webhook → `Secret doğru mu?` (geliştirme VEYA production anahtarı, yanlışsa 401) → Switch `event` → `order`: Sheets `Siparisler` → 200 yanıt (AI'yı beklemez) → `Mail bilgisi hazırla` → DeepSeek (`deepseek-chat`) → `Mail taslağı` (`{to, subject, body}`) → `İzinli adres mi?` → Gmail gönder. `stock_notify`: Sheets `Bildirimler` → 200. Diğer: 400.
+- **Workflow** `n8n/ont-sheets-workflow.json` (n8n'de "ONT → Google Sheets", Published, path `ont`). Repodaki dosyada anahtarlar ve izinli e-posta yer tutucudur (`WEBHOOK_SECRET_BURAYA`, `PROD_SECRET_BURAYA`, `IZINLI_ADRES_BURAYA`); gerçek değerler yalnızca n8n'de. Akış: Webhook → `Secret doğru mu?` (geliştirme VEYA production anahtarı, yanlışsa 401) → Switch `event` → `order`: `Siparisler` başlık satırı okunur → satır başlıklara göre dizilir → Sheets API `values.append` (RAW, INSERT_ROWS) → 200 yanıt (AI'yı beklemez) → `Mail bilgisi hazırla` → DeepSeek (`deepseek-chat`) → `Mail taslağı` (`{to, subject, body}`) → `İzinli adres mi?` → `Gmail ham mesaj` → Gmail API (`messages/send`). `stock_notify`: `Bildirimler` aynı şekilde (başlık → satır → `values.append`) → 200. Diğer: 400.
 - **Hazırlanma süresini AI tahmin etmez:** `prepDays`'ten gelir (magnet 3 iş günü; orijinalde `null` → "onayda bildirilir"); prompt süre/tarih uydurmayı yasaklar.
 - **Gmail yalnızca izinli adrese gönderir** (formdan gelen rastgele adreslerle hesabın spam aracı olmaması için); diğer siparişlerde taslak execution'da kalır.
-- Sheet: "ONT Siparişler" (sekmeler `Siparisler`, `Bildirimler`; sekme adları node'daki adla birebir aynı olmalı). n8n credential'ları: Google Sheets account, Gmail - Bootcamp, DeepSeek - Bootcamp.
+- Sheet: "ONT Siparişler" (sekmeler `Siparisler`, `Bildirimler`; sekme adları node'daki adla birebir aynı olmalı). n8n credential'ları: Google Sheets account, Gmail-Send-only (genel Google OAuth2, yalnızca `gmail.send`), DeepSeek - Bootcamp.
+- **Kayıt kuralı (2026-11-13):** n8n'in Google Sheets append node'u kullanılmaz: boş satırı kendisi seçtiği için aynı anda gelen iki sipariş aynı satıra yazılıp birbirini siliyordu (BizCard'da canlı testte görüldü). Varsayılan `USER_ENTERED` biçimi de `=` ile başlayan girdiyi formül olarak çalıştırıyordu. Kayıt Sheets API `values.append` (RAW, INSERT_ROWS) ile yapılır; sütun sırası her kayıtta başlık satırından okunur (sekmeye sütun eklenebilir, sıra değişebilir). Tam yetkili Gmail node'u ve credential'ı kullanılmaz; n8n posta kutusunu okuyamaz. Testler `tests/workflow.test.js`. Canlı test: 3 eşzamanlı stok bildirimi → `Bildirimler` satır 4/5/6, hiçbiri kaybolmadı.
 - `.env.local` geliştirme `WEBHOOK_URL` = `http://localhost:5678/webhook/ont` (eski webhook.site adresi yorumda).
 - **Kanıt:** eşinin canlı siteden verdiği gerçek sipariş (execution #14): Sheet satırı, DeepSeek maili, Gmail `SENT`. Kısa düşünce yanıtı yazıldı.
 - **Canlı geri alındı:** gösterim için Production `WEBHOOK_URL` geçici olarak tünele bağlanmıştı; şimdi yeni bir webhook.site adresinde (birkaç günde silinir). Production `WEBHOOK_SECRET` 2026-11-05'te yenilendi ve n8n bunu da kabul ediyor. Canlıyı kalıcı olarak n8n'e bağlamak için n8n'in sürekli açık bir yerde (n8n Cloud / VPS) çalışması gerekir; quick tunnel + Mac buna uygun değil.
