@@ -2,6 +2,12 @@
 
 Ressam **Osman Nihat Tok**'un (proje sahibinin babası; ONT baş harfleri) eserlerini satan galeri sitesi. Kursun "AtölyeKart" ödev serisi için yapılıyor, ama gerçek satışta kullanılacak şekilde: gerçek eserler geldiğinde yalnızca veri değişmeli, yapı değil.
 
+## Ortam
+
+- Klasör `~/Desktop/AtölyeKart` (2026-11-13'e kadar `~/Desktop/Bizcard/AtölyeKart` idi; BizCard ayrı bir projedir, ona dokunulmaz).
+- BizCard ile **ortak** olan tek şey altyapı: laptoptaki n8n (Docker `n8n-bootcamp`, compose `~/Desktop/n8n-bootcamp`), Cloudflare tüneli (`n8n-tunnel`) ve n8n credential'ları. Tünel düşerse iki proje birden etkilenir; tünel adımları BizCard'ın CLAUDE.md'sinde.
+- Ödev belgeleri (Hafta 1–4 PDF'leri, raporlar, n8n lab PDF'i) `belgeler/` altında; git ve Vercel dışında.
+
 ## İş bağlamı
 
 - **Sektör:** Özgün resim satışı.
