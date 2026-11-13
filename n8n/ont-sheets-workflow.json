@@ -122,142 +122,56 @@
     },
     {
       "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "SHEET_URL_BURAYA",
-          "mode": "url"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Siparisler",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "consentAt": "={{ $json.body.consentAt }}",
-            "name": "={{ $json.body.name }}",
-            "email": "={{ $json.body.email }}",
-            "phone": "={{ $json.body.phone }}",
-            "address": "={{ $json.body.address }}",
-            "productId": "={{ $json.body.productId }}",
-            "productName": "={{ $json.body.productName }}",
-            "quantity": "={{ $json.body.quantity }}",
-            "total": "={{ $json.body.total }}",
-            "demo": "={{ $json.body.demo }}",
-            "payment": "={{ $json.body.payment }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "consentAt",
-              "displayName": "consentAt",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "name",
-              "displayName": "name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "email",
-              "displayName": "email",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "phone",
-              "displayName": "phone",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "address",
-              "displayName": "address",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "productId",
-              "displayName": "productId",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "productName",
-              "displayName": "productName",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "quantity",
-              "displayName": "quantity",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "total",
-              "displayName": "total",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "demo",
-              "displayName": "demo",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "payment",
-              "displayName": "payment",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ]
-        },
+        "authentication": "predefinedCredentialType",
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/SHEET_ID_BURAYA/values/Siparisler!1:1",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "options": {}
+      },
+      "id": "743e6909-8900-41ca-a97d-78f1344cb86f",
+      "name": "Siparisler başlıkları",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        580,
+        -260
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "lMRvyORsgRRBsuuu",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Satırı Sheet'in başlık satırına göre dizer: sütun sırası değişse de her değer kendi sütununa yazılır.\n// Kayıt values.append (RAW) ile yapılır: n8n Sheets node'u boş satırı kendisi seçtiği için eşzamanlı siparişler\n// aynı satıra yazılıp birbirini silebiliyordu; RAW, \"=...\" ile başlayan girdinin formül olarak çalışmasını da engeller.\nconst headers = ($json.values && $json.values[0]) || [];\nif (!headers.length) throw new Error('Siparisler sekmesinde başlık satırı yok');\nconst body = $('ONT Webhook').first().json.body;\nconst cell = v => v == null ? '' : typeof v === 'object' ? JSON.stringify(v) : v;\nreturn [{ json: { values: [headers.map(h => cell(body[String(h).trim()]))] } }];"
+      },
+      "id": "ab7ebbe7-92c2-421c-a9bc-96924d68aca5",
+      "name": "Sipariş satırı",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "method": "POST",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/SHEET_ID_BURAYA/values/Siparisler!A1:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ values: $json.values }) }}",
         "options": {}
       },
       "name": "Siparisler'e ekle",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
-        700,
+        820,
         -260
       ],
       "credentials": {
@@ -343,92 +257,56 @@
     },
     {
       "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "SHEET_URL_BURAYA",
-          "mode": "url"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Bildirimler",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "consentAt": "={{ $json.body.consentAt }}",
-            "name": "={{ $json.body.name }}",
-            "email": "={{ $json.body.email }}",
-            "productId": "={{ $json.body.productId }}",
-            "productName": "={{ $json.body.productName }}",
-            "item": "={{ $json.body.item }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "consentAt",
-              "displayName": "consentAt",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "name",
-              "displayName": "name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "email",
-              "displayName": "email",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "productId",
-              "displayName": "productId",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "productName",
-              "displayName": "productName",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "item",
-              "displayName": "item",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ]
-        },
+        "authentication": "predefinedCredentialType",
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/SHEET_ID_BURAYA/values/Bildirimler!1:1",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "options": {}
+      },
+      "id": "927fe9eb-bc95-4bbe-9421-9534e8b7969e",
+      "name": "Bildirimler başlıkları",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        580,
+        -60
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "lMRvyORsgRRBsuuu",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Satırı Sheet'in başlık satırına göre dizer: sütun sırası değişse de her değer kendi sütununa yazılır.\n// Kayıt values.append (RAW) ile yapılır: n8n Sheets node'u boş satırı kendisi seçtiği için eşzamanlı siparişler\n// aynı satıra yazılıp birbirini silebiliyordu; RAW, \"=...\" ile başlayan girdinin formül olarak çalışmasını da engeller.\nconst headers = ($json.values && $json.values[0]) || [];\nif (!headers.length) throw new Error('Bildirimler sekmesinde başlık satırı yok');\nconst body = $('ONT Webhook').first().json.body;\nconst cell = v => v == null ? '' : typeof v === 'object' ? JSON.stringify(v) : v;\nreturn [{ json: { values: [headers.map(h => cell(body[String(h).trim()]))] } }];"
+      },
+      "id": "e2007100-3317-496b-b99e-328cf3fc8d11",
+      "name": "Bildirim satırı",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "method": "POST",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/SHEET_ID_BURAYA/values/Bildirimler!A1:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ values: $json.values }) }}",
         "options": {}
       },
       "name": "Bildirimler'e ekle",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
-        700,
+        820,
         -60
       ],
       "credentials": {
@@ -519,26 +397,39 @@
     },
     {
       "parameters": {
-        "sendTo": "={{ $json.to }}",
-        "subject": "={{ $json.subject }}",
-        "emailType": "text",
-        "message": "={{ $json.body }}",
-        "options": {
-          "appendAttribution": false,
-          "senderName": "ONT Art Gallery"
-        }
+        "jsCode": "// Gmail API'ye ham mail: n8n yalnızca gmail.send izinli bağlantıyla mail gönderebilir, posta kutusunu okuyamaz.\n// Başlıklara satır sonu girmez (tek alıcı, Bcc eklenemez); konu ve gönderen adı UTF-8 kodlanır. Buffer kullanmaz.\nconst SENDER = { name: \"ONT Art Gallery\", email: \"ragipcantok@gmail.com\" };\nconst B64 = \"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/\";\nfunction utf8Bytes(s) {\n  const out = [];\n  for (const ch of String(s)) {\n    const c = ch.codePointAt(0);\n    if (c < 0x80) out.push(c);\n    else if (c < 0x800) out.push(0xc0 | (c >> 6), 0x80 | (c & 63));\n    else if (c < 0x10000) out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));\n    else out.push(0xf0 | (c >> 18), 0x80 | ((c >> 12) & 63), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));\n  }\n  return out;\n}\nfunction base64(bytes) {\n  let s = \"\";\n  for (let i = 0; i < bytes.length; i += 3) {\n    const n = (bytes[i] << 16) | ((bytes[i + 1] ?? 0) << 8) | (bytes[i + 2] ?? 0);\n    s += B64[(n >> 18) & 63] + B64[(n >> 12) & 63] + (i + 1 < bytes.length ? B64[(n >> 6) & 63] : \"=\") + (i + 2 < bytes.length ? B64[n & 63] : \"=\");\n  }\n  return s;\n}\nconst encodedWord = s => `=?UTF-8?B?${base64(utf8Bytes(s))}?=`;\nconst oneHeaderLine = s => String(s ?? \"\").replace(/[\\r\\n]+/g, \" \").trim();\nfunction gmailRaw(to, subject, body) {\n  const msg = [\n    `From: ${encodedWord(SENDER.name)} <${SENDER.email}>`,\n    `To: ${oneHeaderLine(to).split(/\\s+/)[0]}`,\n    `Subject: ${encodedWord(oneHeaderLine(subject))}`,\n    \"MIME-Version: 1.0\",\n    \"Content-Type: text/plain; charset=UTF-8\",\n    \"Content-Transfer-Encoding: 8bit\",\n    \"\",\n    String(body ?? \"\").replace(/\\r?\\n/g, \"\\r\\n\")\n  ].join(\"\\r\\n\");\n  return base64(utf8Bytes(msg)).replace(/\\+/g, \"-\").replace(/\\//g, \"_\").replace(/=+$/, \"\");\n}\nconst m = $input.first().json;\nreturn [{ json: { ...m, raw: gmailRaw(m.to, m.subject, m.body) } }];\n"
       },
-      "name": "Gmail: teşekkür gönder",
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.1,
+      "id": "3cac89ff-b3de-4e3f-b672-e9cd851a7257",
+      "name": "Gmail ham mesaj",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         2200,
         -280
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "nodeCredentialType": "googleOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ raw: $json.raw }) }}",
+        "options": {}
+      },
+      "name": "Gmail: teşekkür gönder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2440,
+        -280
       ],
       "credentials": {
-        "gmailOAuth2": {
-          "id": "C45hsmn4HasLnsc7",
-          "name": "Gmail - Bootcamp"
+        "googleOAuth2Api": {
+          "id": "ZnJVTrhzeEHlVefu",
+          "name": "Gmail-Send-only"
         }
       }
     }
@@ -577,14 +468,14 @@
       "main": [
         [
           {
-            "node": "Siparisler'e ekle",
+            "node": "Siparisler başlıkları",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Bildirimler'e ekle",
+            "node": "Bildirimler başlıkları",
             "type": "main",
             "index": 0
           }
@@ -679,12 +570,67 @@
       "main": [
         [
           {
-            "node": "Gmail: teşekkür gönder",
+            "node": "Gmail ham mesaj",
             "type": "main",
             "index": 0
           }
         ],
         []
+      ]
+    },
+    "Siparisler başlıkları": {
+      "main": [
+        [
+          {
+            "node": "Sipariş satırı",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sipariş satırı": {
+      "main": [
+        [
+          {
+            "node": "Siparisler'e ekle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bildirimler başlıkları": {
+      "main": [
+        [
+          {
+            "node": "Bildirim satırı",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bildirim satırı": {
+      "main": [
+        [
+          {
+            "node": "Bildirimler'e ekle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail ham mesaj": {
+      "main": [
+        [
+          {
+            "node": "Gmail: teşekkür gönder",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   }
